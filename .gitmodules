@@ -1,0 +1,40 @@
+[submodule "client"]
+	path = client
+	url = ../rust-bitvmx-client
+	branch = main
+[submodule "rust-bitvmx-key-manager"]
+	path = rust-bitvmx-key-manager
+	url = ../rust-bitvmx-key-manager
+	branch = main
+[submodule "rust-bitvmx-protocol-builder"]
+	path = rust-bitvmx-protocol-builder
+	url = ../rust-bitvmx-protocol-builder
+	branch = main
+[submodule "rust-p2p-handler"]
+	path = rust-p2p-handler
+	url = ../rust-p2p-handler
+	branch = main
+[submodule "bitvmx-unstable"]
+	path = bitvmx-unstable
+	url = ../bitvmx-unstable
+	branch = master
+[submodule "rust-bitvmx-storage-backend"]
+	path = rust-bitvmx-storage-backend
+	url = ../rust-bitvmx-storage-backend
+	branch = main
+[submodule "rust-bitvmx-transaction-dispatcher"]
+	path = rust-bitvmx-transaction-dispatcher
+	url = ../rust-bitvmx-transaction-dispatcher
+	branch = master
+[submodule "rust-bitvmx-transaction-monitor"]
+	path = rust-bitvmx-transaction-monitor
+	url = ../rust-bitvmx-transaction-monitor
+	branch = main
+[submodule "rust-p2p-protocol"]
+	path = rust-p2p-protocol
+	url = ../rust-p2p-protocol
+	branch = master
+[submodule "rust-bitcoin-indexer"]
+	path = rust-bitcoin-indexer
+	url = ../rust-bitcoin-indexer
+	branch = main

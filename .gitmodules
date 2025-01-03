@@ -1,5 +1,5 @@
-[submodule "client"]
-	path = client
+[submodule "rust-bitvmx-client"]
+	path = rust-bitvmx-client
 	url = ../rust-bitvmx-client
 	branch = main
 [submodule "rust-bitvmx-key-manager"]

@@ -14,9 +14,9 @@
 	path = rust-p2p-handler
 	url = ../rust-p2p-handler
 	branch = main
-[submodule "bitvmx-unstable"]
-	path = bitvmx-unstable
-	url = ../bitvmx-unstable
+[submodule "rust-bitvmx-orchestrator"]
+	path = rust-bitvmx-orchestrator
+	url = ../rust-bitvmx-orchestrator
 	branch = master
 [submodule "rust-bitvmx-storage-backend"]
 	path = rust-bitvmx-storage-backend
@@ -25,7 +25,7 @@
 [submodule "rust-bitvmx-transaction-dispatcher"]
 	path = rust-bitvmx-transaction-dispatcher
 	url = ../rust-bitvmx-transaction-dispatcher
-	branch = master
+	branch = main
 [submodule "rust-bitvmx-transaction-monitor"]
 	path = rust-bitvmx-transaction-monitor
 	url = ../rust-bitvmx-transaction-monitor
@@ -33,8 +33,9 @@
 [submodule "rust-p2p-protocol"]
 	path = rust-p2p-protocol
 	url = ../rust-p2p-protocol
-	branch = master
+	branch = main
 [submodule "rust-bitcoin-indexer"]
 	path = rust-bitcoin-indexer
 	url = ../rust-bitcoin-indexer
 	branch = main
+

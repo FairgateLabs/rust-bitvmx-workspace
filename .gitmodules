@@ -38,4 +38,11 @@
 	path = rust-bitcoin-indexer
 	url = ../rust-bitcoin-indexer
 	branch = main
-
+[submodule "rust-bitvmx-settings"]
+	path = rust-bitvmx-settings
+	url = ../rust-bitvmx-settings
+	branch = main
+[submodule "rust-bitvmx-bitcoin-rpc"]
+	path = rust-bitvmx-bitcoin-rpc
+	url = ../rust-bitvmx-bitcoin-rpc
+	branch = main

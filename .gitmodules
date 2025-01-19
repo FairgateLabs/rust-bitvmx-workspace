@@ -17,7 +17,7 @@
 [submodule "rust-bitvmx-orchestrator"]
 	path = rust-bitvmx-orchestrator
 	url = ../rust-bitvmx-orchestrator
-	branch = master
+	branch = main
 [submodule "rust-bitvmx-storage-backend"]
 	path = rust-bitvmx-storage-backend
 	url = ../rust-bitvmx-storage-backend
@@ -38,11 +38,11 @@
 	path = rust-bitcoin-indexer
 	url = ../rust-bitcoin-indexer
 	branch = main
-[submodule "rust-bitvmx-settings"]
-	path = rust-bitvmx-settings
-	url = ../rust-bitvmx-settings
-	branch = main
 [submodule "rust-bitvmx-bitcoin-rpc"]
 	path = rust-bitvmx-bitcoin-rpc
 	url = ../rust-bitvmx-bitcoin-rpc
+	branch = main
+[submodule "rust-bitvmx-settings"]
+	path = rust-bitvmx-settings
+	url = ../rust-bitvmx-settings
 	branch = main

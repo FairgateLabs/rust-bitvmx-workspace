@@ -1,0 +1,61 @@
+name: 'Template Test Action'
+on:
+  workflow_call:
+    inputs:
+      repo: 
+        description: 'Repository to check out'
+        required: true
+        type: string
+      submodule_path:
+        description: 'Path to the submodule within the repository'
+        required: true
+        type: string
+      cargo_lock_path:
+        description: 'Path to the Cargo.lock file'
+        required: true
+        type: string
+      target_path:
+        description: 'Path to the target directory'
+        required: true
+        type: string
+    secrets:
+      REPO_ACCESS_TOKEN:
+        description: 'Token to access the repository'
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug Token
+        run: |
+          echo "Token: ${{ secrets.REPO_ACCESS_TOKEN }}"
+        
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ secrets.REPO_ACCESS_TOKEN }}
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          ref: main
+          path: rust-bitvmx-workspace
+          submodules: true
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            rust-bitvmx-workspace/${{ inputs.submodule_path }}/target
+            rust-bitvmx-workspace/${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust-bitvmx-workspace/${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build project
+        run: |
+          cd rust-bitvmx-workspace/${{ inputs.submodule_path }}
+          cargo build --verbose
+
+      - name: Run tests
+        run: |
+          cd rust-bitvmx-workspace/${{ inputs.submodule_path }}
+          cargo test --verbose

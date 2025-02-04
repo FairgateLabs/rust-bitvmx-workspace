@@ -40,13 +40,8 @@ jobs:
           repository: ${{ inputs.repo }}
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           ref: main
-          path: rust-bitvmx-workspace
+          path: ../rust-bitvmx-workspace
           submodules: true
-      
-      - name: Move repo to parent directory
-        run: |
-          mv rust-bitvmx-workspace/* ..
-          rm -rf rust-bitvmx-workspace
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3

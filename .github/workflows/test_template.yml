@@ -48,6 +48,11 @@ jobs:
           mkdir -p ../workspace
           mv rust-bitvmx-workspace-temp/* ../workspace/
           rm -rf rust-bitvmx-workspace-temp
+      
+      - name: Update submodules in the moved workspace
+        run: |
+          cd ../workspace
+          git submodule update --init --recursive
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3

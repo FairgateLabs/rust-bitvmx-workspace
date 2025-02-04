@@ -32,7 +32,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          repository: https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/FairgateLabs/rust-bitvmx-workspace
+          repository: ${{ inputs.repo }}
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           ref: main
           path: rust-bitvmx-workspace

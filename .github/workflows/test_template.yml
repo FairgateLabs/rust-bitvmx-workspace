@@ -1,4 +1,5 @@
 name: 'Template Test Action'
+
 on:
   workflow_call:
     inputs:
@@ -25,14 +26,11 @@ on:
 
 jobs:
   test:
+    if: ${{ !contains(github.event.pull_request.title, '[cov]') }}
     runs-on: ubuntu-latest
-    steps:
-      - name: Debug Token
-        run: |
-          echo "Token: ${{ secrets.REPO_ACCESS_TOKEN }}"
-        
+    steps:      
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo }}
           token: ${{ secrets.REPO_ACCESS_TOKEN }}

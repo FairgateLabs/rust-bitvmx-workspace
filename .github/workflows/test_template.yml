@@ -40,8 +40,14 @@ jobs:
           repository: ${{ inputs.repo }}
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           ref: main
-          path: ../rust-bitvmx-workspace
+          path: rust-bitvmx-workspace-temp
           submodules: true
+
+      - name: Move workspace to desired location
+        run: |
+          mkdir -p ../workspace
+          mv rust-bitvmx-workspace-temp/* ../workspace/
+          rm -rf rust-bitvmx-workspace-temp
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3

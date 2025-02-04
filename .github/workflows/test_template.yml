@@ -54,7 +54,11 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Build project
-        run: |          
+        run: |
+          ls -l
+          pwd
+          cd ..
+          ls -l
           cargo build --verbose
 
       - name: Run tests

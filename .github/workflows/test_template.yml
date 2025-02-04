@@ -37,6 +37,7 @@ jobs:
       - name: Checkout workspace
         uses: actions/checkout@v4
         with:
+          run: cd ..
           repository: ${{ inputs.repo }}
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           ref: main

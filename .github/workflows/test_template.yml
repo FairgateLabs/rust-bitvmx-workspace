@@ -37,11 +37,10 @@ jobs:
       - name: Checkout workspace
         uses: actions/checkout@v4
         with:
-          run: cd ..
           repository: ${{ inputs.repo }}
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           ref: main
-          path: rust-bitvmx-workspace
+          path: ..
           submodules: true
 
       - name: Cache Cargo dependencies
@@ -58,8 +57,6 @@ jobs:
         run: |
           ls -l
           pwd
-          cd ..
-          ls -l
           cargo build --verbose
 
       - name: Run tests

@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps: 
       - name: Checkout workspace
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:
           repository: ${{ inputs.repo }}
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
@@ -41,7 +41,7 @@ jobs:
             ls -l
       
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:          
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           clean: false

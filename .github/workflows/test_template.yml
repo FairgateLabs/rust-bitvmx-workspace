@@ -59,12 +59,12 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Build project
-        run: |
-          ls -l
-          cd ..
+        run: |          
+          cd ${{ inputs.submodule_path }}
           ls -l          
           cargo build --verbose
 
       - name: Run tests
-        run: |          
+        run: |
+          cd ${{ inputs.submodule_path }}
           cargo test --verbose

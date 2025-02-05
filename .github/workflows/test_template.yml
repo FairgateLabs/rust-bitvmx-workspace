@@ -29,24 +29,24 @@ jobs:
     if: ${{ !contains(github.event.pull_request.title, '[cov]') }}
     runs-on: ubuntu-latest
     steps: 
-      - name: Checkout workspace
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ inputs.repo }}
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          ref: main
-          path: rust-bitvmx-workspace
-          submodules: recursive
-          run: |
-            ls -l
+      - name: Set up git with token authentication
+        run: |
+          # Configure git to use the token for authentication
+          git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+    
+      - name: Checkout workspace repository
+        run: |
+          # Clone the repository with submodules
+          git clone --recurse-submodules --depth=1 https://github.com/${{ inputs.repo }} rust-bitvmx-workspace
+          # Verify the files in the workspace
+          ls -l rust-bitvmx-workspace
       
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:          
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          clean: false
-          run: |
-            ls -l
+      - name: Checkout additional repository
+        run: |
+          # Clone another repository if needed (replace with your desired repo)
+          git clone --depth=1 https://github.com/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
+          # Verify files of the second repo
+          ls -l ${{ inputs.submodule_path }}
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3

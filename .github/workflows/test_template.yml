@@ -28,31 +28,24 @@ jobs:
   test:
     if: ${{ !contains(github.event.pull_request.title, '[cov]') }}
     runs-on: ubuntu-latest
-    steps:    
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:          
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}  
-
+    steps: 
       - name: Checkout workspace
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo }}
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
           ref: main
-          path: rust-bitvmx-workspace-temp
+          path: rust-bitvmx-workspace
           submodules: true
-
-      - name: Move workspace to desired location
-        run: |
-          mkdir -p ../workspace
-          mv rust-bitvmx-workspace-temp/* ../workspace/
-          rm -rf rust-bitvmx-workspace-temp
+          run: |
+            ls -l
       
-      - name: Update submodules in the moved workspace
-        run: |
-          cd ../workspace
-          git submodule update --init --recursive
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:          
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          run: |
+            ls -l
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3
@@ -66,8 +59,7 @@ jobs:
 
       - name: Build project
         run: |
-          ls -l
-          pwd
+          ls -l          
           cargo build --verbose
 
       - name: Run tests

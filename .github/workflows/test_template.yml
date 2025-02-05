@@ -44,7 +44,7 @@ jobs:
       - name: Checkout additional repository
         run: |
           # Clone another repository if needed (replace with your desired repo)
-          git clone --depth=1 https://github.com/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
+          git clone --depth=1 https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
           # Verify files of the second repo
           ls -l ${{ inputs.submodule_path }}
 

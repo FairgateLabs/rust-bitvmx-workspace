@@ -48,10 +48,10 @@ jobs:
           # Verify files of the second repo
           ls -l ${{ inputs.submodule_path }}
 
-      - name: Move all submodules to correct location
-        run: |
-          # Move the submodule directory to the correct place
-          mv rust-bitcoin-indexer/rust-bitvmx-workspace/* rust-bitcoin-indexer/      
+      # - name: Move all submodules to correct location
+      #   run: |
+      #     # Move the submodule directory to the correct place
+      #     mv rust-bitcoin-indexer/rust-bitvmx-workspace/* rust-bitcoin-indexer/      
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3
@@ -64,9 +64,14 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Build project
-        run: |          
+        run: |
+          cd rust-bitvmx-workspace
+          ls -l
+          cd ..
+          pwd         
           cd ${{ inputs.submodule_path }}
-          ls -l          
+          ls -l
+          pwd
           cargo build --verbose
 
       - name: Run tests

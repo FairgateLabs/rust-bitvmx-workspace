@@ -65,10 +65,16 @@ jobs:
 
       - name: Build project
         run: |
+          pwd
           cd rust-bitvmx-workspace
+          cd rust-bitvmx-bitcoin-rpc
           ls -l
           cd ..
-          pwd         
+          cd ..
+          pwd
+          cd pwd
+          cd rust-bitcoin-indexer
+          pwd       
           cd ${{ inputs.submodule_path }}
           ls -l
           pwd

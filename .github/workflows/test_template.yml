@@ -59,6 +59,8 @@ jobs:
 
       - name: Build project
         run: |
+          ls -l
+          cd ..
           ls -l          
           cargo build --verbose
 

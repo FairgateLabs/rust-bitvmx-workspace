@@ -31,28 +31,20 @@ jobs:
     steps: 
       - name: Set up git with token authentication
         run: |
-          # Configure git to use the token for authentication
           git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
     
       - name: Checkout workspace repository
         run: |
-          # Clone the repository with submodules
           git clone --recurse-submodules --depth=1 https://github.com/${{ inputs.repo }} rust-bitvmx-workspace
-          # Verify the files in the workspace
-          ls -l rust-bitvmx-workspace
       
-      - name: Checkout additional repository
+      - name: Checkout current repository
         run: |
-          # Clone another repository if needed (replace with your desired repo)
-          git clone --depth=1 https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
-          # Verify files of the second repo
+          git clone --depth=1 --branch ${{ github.head_ref }} https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
           ls -l ${{ inputs.submodule_path }}
 
       - name: Move all submodules to correct location
         run: |
-          # Move the submodule directory to the correct place
           find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
-
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3
@@ -66,10 +58,7 @@ jobs:
 
       - name: Build project
         run: |
-          pwd         
           cd ${{ inputs.submodule_path }}
-          ls -l
-          pwd
           cargo build --verbose
 
       - name: Run tests

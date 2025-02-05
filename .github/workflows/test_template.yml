@@ -51,7 +51,8 @@ jobs:
       - name: Move all submodules to correct location
         run: |
           # Move the submodule directory to the correct place
-          mv /home/runner/work/rust-bitcoin-indexer/rust-bitcoin-indexer/rust-bitvmx-workspace/* /home/runner/work/rust-bitcoin-indexer/rust-bitcoin-indexer
+          find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
+
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3

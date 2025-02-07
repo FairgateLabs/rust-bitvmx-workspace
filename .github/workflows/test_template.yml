@@ -18,6 +18,19 @@ on:
         description: 'Path to the target directory'
         required: true
         type: string
+      docker_required:
+        description: 'Whether to execute Docker-related steps'
+        required: false
+        type: boolean
+        default: false
+      dockerfile_path:
+        description: 'Path to Docker file'
+        required: false
+        type: string        
+      docker_compose_path:
+        description: 'Path to docker-compose file'
+        required: false
+        type: string
     secrets:
       REPO_ACCESS_TOKEN:
         description: 'Token to access the repository'
@@ -58,6 +71,44 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
+
+      ############ DOCKER SETUP OPTIONAL STEPS ############      
+      - name: Set up Docker Buildx
+        if: ${{ inputs.docker_required }}
+        uses: docker/setup-buildx-action@v2
+
+      - name: Create cache directory
+        if: ${{ inputs.docker_required }}
+        run: mkdir -p /tmp/.buildx-cache
+
+      - name: Cache Docker layers
+        if: ${{ inputs.docker_required }}
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+              ${{ runner.os }}-buildx-
+
+      - name: Build and push Docker image        
+        if: ${{ inputs.docker_required }}
+        uses: docker/build-push-action@v4
+        with:
+          run: |
+            ls -l
+            pwd
+          context: ./${{ inputs.submodule_path }}
+          file: ./${{ inputs.submodule_path }}/${{ inputs.dockerfile_path }}
+          push: false  # Build locally
+          tags: user/repository:latest          
+
+      - name: Run docker-compose
+        if: ${{ inputs.docker_required }}
+        uses: hoverkraft-tech/compose-action@v2.0.1
+        with:
+          context: ./
+          compose-file: "./${{ inputs.submodule_path }}/${{ inputs.docker_compose_path }}"
+      ############ END DOCKER OPTIONAL SETUP STEPS ############
 
       - name: Build project
         run: |

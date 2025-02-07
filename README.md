@@ -22,3 +22,11 @@ git clone git@github.com:FairgateLabs/rust-bitvmx-workspace.git
 git submodule init
 git submodule update --remote --checkout
 ```
+
+## Architecture Diagram
+
+![Architecture Diagram Image]
+
+
+<!-- Links section -->
+[Architecture Diagram Image]: bitvmx-architecture.png

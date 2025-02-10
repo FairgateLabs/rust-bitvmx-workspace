@@ -45,9 +45,23 @@ jobs:
           git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
           ls -l ${{ inputs.submodule_path }}
 
-      - name: Move all submodules to correct location
+      - name: Detect host for container
         run: |
-          find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
+          if (grep -qi microsoft /proc/version || docker info 2>/dev/null | grep -qi 'ostype: windows'); then
+            echo "IS_WINDOWS_DOCKER=true" >> $GITHUB_ENV
+          else
+            echo "IS_WINDOWS_DOCKER=false" >> $GITHUB_ENV
+          fi
+
+      - name: Move all submodules to correct location Windows Docker
+        if: env.ACT == 'true' && env.IS_WINDOWS_DOCKER == 'true'
+        run: |
+          find /mnt/c/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /mnt/c/${{ inputs.submodule_path }}/ \;
+      
+      - name: Move all submodules to correct location Linux Docker
+        if: env.ACT == 'true' && env.IS_WINDOWS_DOCKER == 'false'
+        run: |
+          find ${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} ${{ inputs.submodule_path }}/ \;
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3

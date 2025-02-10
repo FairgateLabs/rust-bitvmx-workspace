@@ -46,3 +46,21 @@
 	path = rust-bitvmx-settings
 	url = ../rust-bitvmx-settings
 	branch = main
+[submodule "BitVMX-CPU"]
+	path = BitVMX-CPU
+	url = ../BitVMX-CPU
+	branch = main
+[submodule "rust-bitvmx-job-dispatcher"]
+	path = rust-bitvmx-job-dispatcher
+	url = ../rust-bitvmx-job-dispatcher
+	branch = main
+[submodule "rust-bitvmx-broker"]
+	path = rust-bitvmx-broker
+	url = ../rust-bitvmx-broker
+	branch = main
+[submodule "rust-bitvmx-musig2"]
+	path = rust-bitvmx-musig2
+	url = ../rust-bitvmx-musig2
+[submodule "rust-bitcoind"]
+	path = rust-bitcoind
+	url = ../rust-bitcoind

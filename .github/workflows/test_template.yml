@@ -56,11 +56,13 @@ jobs:
       - name: Move all submodules to correct location Windows Docker
         if: env.ACT == 'true' && env.IS_WINDOWS_DOCKER == 'true'
         run: |
-          find /mnt/c/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /mnt/c/${{ inputs.submodule_path }}/ \;
+          echo 'hola'
+          find /mnt/c/rust-bitvmx-workspace/${{ inputs.submodule_path }}/${{ inputs.submodule_path }} -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /mnt/c/${{ inputs.submodule_path }}/ \;
       
       - name: Move all submodules to correct location Linux Docker
         if: env.ACT == 'true' && env.IS_WINDOWS_DOCKER == 'false'
         run: |
+          echo 'chao'
           find ${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} ${{ inputs.submodule_path }}/ \;
 
       - name: Cache Cargo dependencies

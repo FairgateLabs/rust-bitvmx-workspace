@@ -53,17 +53,14 @@ jobs:
             echo "IS_WINDOWS_DOCKER=false" >> $GITHUB_ENV
           fi
 
-      - name: Move all submodules to correct location Windows Docker
-        if: env.ACT == 'true' && env.IS_WINDOWS_DOCKER == 'true'
+      - name: Move all submodules to correct location
+        if: env.ACT == 'true'
         run: |
-          echo 'hola'
-          find /mnt/c/rust-bitvmx-workspace/${{ inputs.submodule_path }}/${{ inputs.submodule_path }} -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /mnt/c/${{ inputs.submodule_path }}/ \;
-      
-      - name: Move all submodules to correct location Linux Docker
-        if: env.ACT == 'true' && env.IS_WINDOWS_DOCKER == 'false'
-        run: |
-          echo 'chao'
-          find ${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} ${{ inputs.submodule_path }}/ \;
+          if [[ "$IS_WINDOWS_DOCKER" == "true" ]]; then
+            find /mnt/c/rust-bitvmx-workspace/${{ inputs.submodule_path }}/${{ inputs.submodule_path }} -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /mnt/c/${{ inputs.submodule_path }}/ \;
+          else
+            find ${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} ${{ inputs.submodule_path }}/ \;
+          fi
 
       - name: Cache Cargo dependencies
         uses: actions/cache@v3

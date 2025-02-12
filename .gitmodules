@@ -46,3 +46,7 @@
 	path = rust-bitvmx-settings
 	url = ../rust-bitvmx-settings
 	branch = main
+[submodule "BitVMX-CPU"]
+	path = BitVMX-CPU
+	url = ../BitVMX-CPU
+	branch = main

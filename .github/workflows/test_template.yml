@@ -35,16 +35,28 @@ on:
       REPO_ACCESS_TOKEN:
         description: 'Token to access the repository'
         required: true
+      SSH_PRIVATE_KEY:
+        description: 'Private SSH key to authenticate with GitHub'
+        required: true
 
 jobs:
   test:
     if: ${{ !contains(github.event.pull_request.title, '[cov]') }}
     runs-on: ubuntu-latest
-    steps: 
+    steps:
+      - name: Set up SSH key for submodule cloning
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - name: Set up git with token authentication
         run: |
           git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
-    
+     
       - name: Checkout workspace repository
         run: |
           git clone --recurse-submodules --depth=1 --shallow-submodules https://github.com/${{ inputs.repo }} rust-bitvmx-workspace

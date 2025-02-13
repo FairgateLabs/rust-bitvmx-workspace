@@ -45,12 +45,16 @@ jobs:
         run: |
           git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
   
-      - name: Set up SSH key
+      - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          # Start the SSH agent
+          eval $(ssh-agent -s)
+          # Add the SSH key to the agent
           ssh-add ~/.ssh/id_rsa
+          # Ensure GitHub's host is trusted
           ssh-keyscan github.com >> ~/.ssh/known_hosts
 
       - name: Debug SSH Private Key (unsafe, remove after debugging)

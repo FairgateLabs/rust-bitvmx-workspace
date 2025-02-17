@@ -27,12 +27,16 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  local_test:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - name: Run common steps (checkout, auth)
         uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_steps.yml@local_test_workflow
-    
+  
+  setup-post-checkout:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
       - name: Detect host for container
         run: |
           if (grep -qi microsoft /proc/version || docker info 2>/dev/null | grep -qi 'ostype: windows'); then
@@ -49,10 +53,10 @@ jobs:
           else
             find ${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} ${{ inputs.submodule_path }}/ \;
           fi
-
-      - name: Move all submodules to correct location
-        run: |
-          find rust-p2p-protocol/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name 'rust-p2p-protocol' -exec mv {} rust-p2p-protocol/ \;
-
+  
+  build-test:
+    runs-on: ubuntu-latest
+    needs: setup-post-checkout
+    steps:
       - name: Run common build and test steps
         uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_step2.yml@local_test_workflow

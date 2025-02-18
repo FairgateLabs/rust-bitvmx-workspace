@@ -58,3 +58,6 @@
 	path = rust-bitvmx-broker
 	url = ../rust-bitvmx-broker
 	branch = main
+[submodule "rust-bitvmx-musig2"]
+	path = rust-bitvmx-musig2
+	url = ../rust-bitvmx-musig2

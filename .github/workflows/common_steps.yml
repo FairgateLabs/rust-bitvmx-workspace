@@ -25,7 +25,6 @@ on:
 
 jobs:
   test:
-    if: ${{ !contains(github.event.pull_request.title, '[cov]') }}
     runs-on: ubuntu-latest
     steps: 
       - name: Set up git with token authentication

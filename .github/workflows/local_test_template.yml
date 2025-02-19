@@ -29,12 +29,16 @@ env:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    container:
+      image: fairgatelabs/rust-bitvmx-workspace:latest
     steps:
       - name: Run common steps (checkout, auth)
         uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_steps.yml@local_test_workflow
   
   setup-post-checkout:
     runs-on: ubuntu-latest
+    container:
+      image: fairgatelabs/rust-bitvmx-workspace:latest
     needs: setup
     steps:
       - name: Detect host for container
@@ -56,6 +60,8 @@ jobs:
   
   build-test:
     runs-on: ubuntu-latest
+    container:
+      image: fairgatelabs/rust-bitvmx-workspace:latest
     needs: setup-post-checkout
     steps:
       - name: Run common build and test steps

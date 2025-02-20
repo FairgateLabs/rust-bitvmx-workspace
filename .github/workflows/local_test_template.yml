@@ -29,6 +29,12 @@ env:
 jobs:
   setup:
     uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_steps.yml@local_test_workflow
+    with:
+      repo: ${{ inputs.repo }} 
+      submodule_path: ${{ inputs.submodule_path }}
+      cargo_lock_path: ${{ inputs.cargo_lock_path }}
+      target_path: ${{ inputs.target_path }}
+    secrets: inherit
   
   setup-post-checkout:
     runs-on: ubuntu-latest
@@ -55,3 +61,11 @@ jobs:
   
   build-test:
     uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_step2.yml@local_test_workflow
+    with:
+      repo: ${{ inputs.repo }} 
+      submodule_path: ${{ inputs.submodule_path }}
+      cargo_lock_path: ${{ inputs.cargo_lock_path }}
+      target_path: ${{ inputs.target_path }}
+      docker_required: true
+      dockerfile_path: src/tests/Dockerfile
+      docker_compose_path: src/tests/docker-compose.yml

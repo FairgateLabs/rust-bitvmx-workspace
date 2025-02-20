@@ -61,3 +61,6 @@
 [submodule "rust-bitvmx-musig2"]
 	path = rust-bitvmx-musig2
 	url = ../rust-bitvmx-musig2
+[submodule "rust-bitcoind"]
+	path = rust-bitcoind
+	url = ../rust-bitcoind

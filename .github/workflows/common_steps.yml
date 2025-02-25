@@ -45,6 +45,7 @@ jobs:
     
       - name: Checkout workspace repository
         run: |
+          rm -rf ${{ inputs.repo }}
           git clone --recurse-submodules --depth=1 https://github.com/${{ inputs.repo }} rust-bitvmx-workspace
       
       - name: Checkout current repository
@@ -53,6 +54,5 @@ jobs:
           if [[ -z "$BRANCH" ]]; then
             BRANCH="main"
           fi
-          rm -rf ${{ inputs.submodule_path }}
           git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
           ls -l ${{ inputs.submodule_path }}

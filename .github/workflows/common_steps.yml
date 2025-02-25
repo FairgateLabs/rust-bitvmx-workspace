@@ -53,5 +53,6 @@ jobs:
           if [[ -z "$BRANCH" ]]; then
             BRANCH="main"
           fi
+          rm -rf ${{ inputs.submodule_path }}
           git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
           ls -l ${{ inputs.submodule_path }}

@@ -41,8 +41,6 @@ jobs:
   
   setup-post-checkout:
     runs-on: ubuntu-latest
-    container:
-      image: fairgatelabs/rust-bitvmx-workspace:latest
     needs: setup
     steps:
       - name: Detect host for container

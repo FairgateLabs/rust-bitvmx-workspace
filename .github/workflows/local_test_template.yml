@@ -61,6 +61,7 @@ jobs:
   
   build-test:
     uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_steps2.yml@local_test_workflow
+    needs: setup-post-checkout    
     with:
       repo: ${{ inputs.repo }} 
       submodule_path: ${{ inputs.submodule_path }}

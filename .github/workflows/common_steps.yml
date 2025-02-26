@@ -37,7 +37,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           sed -i 's/-----BEGIN OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
           sed -i 's/-----END OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
-          sed -i 's/ /\'$'\n/g' id_rsa
+          sed -i 's/ /\'$'\n/g' ~/.ssh/id_rsa
           sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----\n/' ~/.ssh/id_rsa
           echo "\n-----END OPENSSH PRIVATE KEY\n" >> ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts

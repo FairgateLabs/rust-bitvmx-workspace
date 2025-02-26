@@ -33,7 +33,12 @@ jobs:
       - name: Set up SSH key for submodule cloning
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | sed '1s/$/\n/' | sed 's/\(-----BEGIN OPENSSH PRIVATE KEY-----\)/\1\n/' | sed 's/\(-----END OPENSSH PRIVATE KEY-----\)/\n\1/' | tr -d '\n' | sed 's/\(-----BEGIN OPENSSH PRIVATE KEY-----\)\(.*\)\(-----END OPENSSH PRIVATE KEY-----\)/\1\2\3/' > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          sed -i 's/-----BEGIN OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
+          sed -i 's/-----END OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
+          sed -i 's/ /\'$'\n/g' id_rsa
+          sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----\n/' ~/.ssh/id_rsa
+          echo "\n-----END OPENSSH PRIVATE KEY\n" >> ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts
         env:

@@ -51,7 +51,7 @@ jobs:
       - name: Set up git with token authentication
         run: |
           git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
-    
+     
       - name: Checkout workspace repository
         run: |
           rm -rf rust-bitvmx-workspace

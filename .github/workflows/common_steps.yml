@@ -1,4 +1,4 @@
-name: 'Local Test Action'
+name: 'Set up and checkout repositories'
 on:
   workflow_call:
     inputs:
@@ -26,11 +26,8 @@ on:
         description: 'Private SSH key to authenticate with GitHub'
         required: true
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  local-test:
+  test:
     runs-on: ubuntu-latest
     steps: 
       - name: Set up SSH key for submodule cloning
@@ -51,7 +48,7 @@ jobs:
       - name: Set up git with token authentication
         run: |
           git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
-     
+    
       - name: Checkout workspace repository
         run: |
           rm -rf rust-bitvmx-workspace
@@ -65,26 +62,3 @@ jobs:
           fi
           git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
           ls -l ${{ inputs.submodule_path }}
-    
-      - name: Move all submodules to correct location
-        run: |
-          find rust-p2p-protocol/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name 'rust-p2p-protocol' -exec mv {} rust-p2p-protocol/ \;
-  
-      - name: Cache Cargo dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-                ${{ inputs.submodule_path }}/target
-                ${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}
-          key: ${{ runner.os }}-cargo-${{ hashFiles('${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}') }}
-          restore-keys: ${{ runner.os }}-cargo-
-  
-      - name: Build project
-        run: |
-          cd ${{ inputs.submodule_path }}
-          cargo build --verbose
-  
-      - name: Run tests
-        run: |
-          cd ${{ inputs.submodule_path }}
-          cargo test --verbose

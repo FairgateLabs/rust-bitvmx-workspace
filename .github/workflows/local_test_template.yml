@@ -30,19 +30,42 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  setup:
-    uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_steps.yml@local_test_workflow
-    with:
-      repo: ${{ inputs.repo }} 
-      submodule_path: ${{ inputs.submodule_path }}
-      cargo_lock_path: ${{ inputs.cargo_lock_path }}
-      target_path: ${{ inputs.target_path }}
-    secrets: inherit
-  
-  setup-post-checkout:
+  local-test:
     runs-on: ubuntu-latest
-    needs: setup
-    steps:
+    steps: 
+      - name: Set up SSH key for submodule cloning
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          sed -i 's/-----BEGIN OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
+          sed -i 's/-----END OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
+          sed -i 's/ /\'$'\n/g' ~/.ssh/id_rsa
+          sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----/' ~/.ssh/id_rsa
+          sed -i ':a;N;$!ba;s/\n$//;P;D' ~/.ssh/id_rsa
+          echo "-----END OPENSSH PRIVATE KEY-----" >> ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Set up git with token authentication
+        run: |
+          git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+    
+      - name: Checkout workspace repository
+        run: |
+          rm -rf rust-bitvmx-workspace
+          git clone --recurse-submodules --depth=1 --shallow-submodules https://github.com/${{ inputs.repo }} rust-bitvmx-workspace
+      
+      - name: Checkout current repository
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          if [[ -z "$BRANCH" ]]; then
+            BRANCH="main"
+          fi
+          git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
+          ls -l ${{ inputs.submodule_path }}
+    
       - name: Detect host for container
         run: |
           if (grep -qi microsoft /proc/version || docker info 2>/dev/null | grep -qi 'ostype: windows'); then
@@ -55,19 +78,26 @@ jobs:
         if: env.ACT == 'true'
         run: |
           if [[ "$IS_WINDOWS_DOCKER" == "true" ]]; then
-            find /mnt/c/rust-bitvmx-workspace/${{ inputs.submodule_path }}/${{ inputs.submodule_path }} -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /mnt/c/${{ inputs.submodule_path }}/ \;
+            find /mnt/c/${{ inputs.submodule_path }}/rust-bitvmx-workspace/${{ inputs.submodule_path }} -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /mnt/c/${{ inputs.submodule_path }}/ \;
           else
             find ${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} ${{ inputs.submodule_path }}/ \;
           fi
   
-  build-test:
-    uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_steps2.yml@local_test_workflow
-    needs: setup-post-checkout    
-    with:
-      repo: ${{ inputs.repo }} 
-      submodule_path: ${{ inputs.submodule_path }}
-      cargo_lock_path: ${{ inputs.cargo_lock_path }}
-      target_path: ${{ inputs.target_path }}
-      docker_required: true
-      dockerfile_path: src/tests/Dockerfile
-      docker_compose_path: src/tests/docker-compose.yml
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+                ${{ inputs.submodule_path }}/target
+                ${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}') }}
+          restore-keys: ${{ runner.os }}-cargo-
+  
+      - name: Build project
+        run: |
+          cd ${{ inputs.submodule_path }}
+          cargo build --verbose
+  
+      - name: Run tests
+        run: |
+          cd ${{ inputs.submodule_path }}
+          cargo test --verbose

@@ -1,4 +1,4 @@
-name: 'Template Test Action'
+name: 'Local Test Action'
 on:
   workflow_call:
     inputs:
@@ -18,19 +18,6 @@ on:
         description: 'Path to the target directory'
         required: true
         type: string
-      docker_required:
-        description: 'Whether to execute Docker-related steps'
-        required: false
-        type: boolean
-        default: false
-      dockerfile_path:
-        description: 'Path to Docker file'
-        required: false
-        type: string        
-      docker_compose_path:
-        description: 'Path to docker-compose file'
-        required: false
-        type: string
     secrets:
       REPO_ACCESS_TOKEN:
         description: 'Token to access the repository'
@@ -43,18 +30,61 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  setup:
-    uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_steps.yml@local_test_workflow
-
-  setup-post-checkout:
+  local-test:
     runs-on: ubuntu-latest
-    container:
-      image: fairgatelabs/rust-bitvmx-workspace:latest
-    needs: setup
-    steps:
+    steps: 
+      - name: Set up SSH key for submodule cloning
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          sed -i 's/-----BEGIN OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
+          sed -i 's/-----END OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
+          sed -i 's/ /\'$'\n/g' ~/.ssh/id_rsa
+          sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----/' ~/.ssh/id_rsa
+          sed -i ':a;N;$!ba;s/\n$//;P;D' ~/.ssh/id_rsa
+          echo "-----END OPENSSH PRIVATE KEY-----" >> ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Set up git with token authentication
+        run: |
+          git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+    
+      - name: Checkout workspace repository
+        run: |
+          rm -rf rust-bitvmx-workspace
+          git clone --recurse-submodules --depth=1 --shallow-submodules https://github.com/${{ inputs.repo }} rust-bitvmx-workspace
+      
+      - name: Checkout current repository
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          if [[ -z "$BRANCH" ]]; then
+            BRANCH="main"
+          fi
+          git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
+          ls -l ${{ inputs.submodule_path }}
+    
       - name: Move all submodules to correct location
         run: |
           find rust-p2p-protocol/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name 'rust-p2p-protocol' -exec mv {} rust-p2p-protocol/ \;
   
-  build-test:
-    uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/common_step2.yml@local_test_workflow
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+                ${{ inputs.submodule_path }}/target
+                ${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}') }}
+          restore-keys: ${{ runner.os }}-cargo-
+  
+      - name: Build project
+        run: |
+          cd ${{ inputs.submodule_path }}
+          cargo build --verbose
+  
+      - name: Run tests
+        run: |
+          cd ${{ inputs.submodule_path }}
+          cargo test --verbose

@@ -64,3 +64,6 @@
 [submodule "rust-bitcoind"]
 	path = rust-bitcoind
 	url = ../rust-bitcoind
+[submodule "bitvmx-test-coordination-system"]
+	path = bitvmx-test-coordination-system
+	url = https://github.com/FairgateLabs/bitvmx-test-coordination-system.git

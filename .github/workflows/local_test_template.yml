@@ -1,0 +1,104 @@
+name: 'Local Test Action'
+on:
+  workflow_call:
+    inputs:
+      repo: 
+        description: 'Repository to check out'
+        required: true
+        type: string
+      submodule_path:
+        description: 'Path to the submodule within the repository'
+        required: true
+        type: string
+      cargo_lock_path:
+        description: 'Path to the Cargo.lock file'
+        required: true
+        type: string
+      target_path:
+        description: 'Path to the target directory'
+        required: true
+        type: string
+    secrets:
+      REPO_ACCESS_TOKEN:
+        description: 'Token to access the repository'
+        required: true
+      SSH_PRIVATE_KEY:
+        description: 'Private SSH key to authenticate with GitHub'
+        required: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  local-test:
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Set up SSH key for submodule cloning
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          sed -i 's/-----BEGIN OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
+          sed -i 's/-----END OPENSSH PRIVATE KEY-----//g' ~/.ssh/id_rsa
+          sed -i 's/ /\'$'\n/g' ~/.ssh/id_rsa
+          sed -i '1s/^/-----BEGIN OPENSSH PRIVATE KEY-----/' ~/.ssh/id_rsa
+          sed -i ':a;N;$!ba;s/\n$//;P;D' ~/.ssh/id_rsa
+          echo "-----END OPENSSH PRIVATE KEY-----" >> ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Set up git with token authentication
+        run: |
+          git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+    
+      - name: Checkout workspace repository
+        run: |
+          rm -rf rust-bitvmx-workspace
+          git clone --recurse-submodules --depth=1 --shallow-submodules https://github.com/${{ inputs.repo }} rust-bitvmx-workspace
+      
+      - name: Checkout current repository
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          if [[ -z "$BRANCH" ]]; then
+            BRANCH="main"
+          fi
+          git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
+          ls -l ${{ inputs.submodule_path }}
+        
+      - name: Detect host for container
+        run: |
+          if (grep -qi microsoft /proc/version || docker info 2>/dev/null | grep -qi 'ostype: windows'); then
+            echo "IS_WINDOWS_DOCKER=true" >> $GITHUB_ENV
+          else
+            echo "IS_WINDOWS_DOCKER=false" >> $GITHUB_ENV
+          fi
+  
+      - name: Move all submodules to correct location
+        if: env.ACT == 'true'
+        run: |
+          if [[ "$IS_WINDOWS_DOCKER" == "true" ]]; then
+            find /mnt/c/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 -exec mv {} /mnt/c/'${{ inputs.submodule_path }}' \;
+          else
+            find ${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} ${{ inputs.submodule_path }}/ \;
+          fi
+    
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+                ${{ inputs.submodule_path }}/target
+                ${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}') }}
+          restore-keys: ${{ runner.os }}-cargo-
+    
+      - name: Build project
+        run: |
+          cd ${{ inputs.submodule_path }}
+          cargo build --verbose
+    
+      - name: Run tests
+        run: |
+          cd ${{ inputs.submodule_path }}
+          cargo test --verbose
+    

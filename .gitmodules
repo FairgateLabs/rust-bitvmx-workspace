@@ -14,9 +14,9 @@
 	path = rust-p2p-handler
 	url = ../rust-p2p-handler
 	branch = main
-[submodule "rust-bitvmx-orchestrator"]
-	path = rust-bitvmx-orchestrator
-	url = ../rust-bitvmx-orchestrator
+[submodule "rust-bitcoin-coordinator"]
+	path = rust-bitcoin-coordinator
+	url = ../rust-bitcoin-coordinator
 	branch = main
 [submodule "rust-bitvmx-storage-backend"]
 	path = rust-bitvmx-storage-backend
@@ -64,3 +64,7 @@
 [submodule "rust-bitcoind"]
 	path = rust-bitcoind
 	url = ../rust-bitcoind
+[submodule "bitvmx-test-coordination-system"]
+	path = bitvmx-test-coordination-system
+	url = ../bitvmx-test-coordination-system
+	branch = main

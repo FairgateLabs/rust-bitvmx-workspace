@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '4 14 * * *'
+    - cron: '10 14 * * *'
 
 jobs:
   nightly:
@@ -27,4 +27,4 @@ jobs:
           submodule_path: ${{ matrix.submodule }}
           cargo_lock_path: '${{ matrix.submodule }}/Cargo.lock'
           target_path: '${{ matrix.submodule }}/target'
-        secrets: inherit
+          secrets: inherit

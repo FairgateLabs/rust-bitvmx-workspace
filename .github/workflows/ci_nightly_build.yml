@@ -1,0 +1,30 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '2 14 * * *'
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        submodule: [rust-p2p-protocol, rust-p2p-handler, rust-bitvmx-transaction-monitor, rust-bitvmx-transaction-dispatcher, rust-bitvmx-protocol-builder,
+         rust-bitvmx-key-manager, rust-bitvmx-client, rust-bitcoin-indexer, rust-bitcoin-coordinator, BitVMX-cpu]
+
+    steps:
+      - name: Checkout workspace repository
+        uses: actions/checkout@v2
+        with:
+          repository: FairgateLabs/rust-bitvmx-workspace
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          path: rust-bitvmx-workspace
+
+      - name: Call template workflow
+        uses: ./.github/workflows/test_template.yml
+        with:
+          repo: 'FairgateLabs/rust-bitvmx-workspace'
+          submodule_path: ${{ matrix.submodule }}
+          cargo_lock_path: '${{ matrix.submodule }}/Cargo.lock'
+          target_path: '${{ matrix.submodule }}/target'
+        secrets: inherit

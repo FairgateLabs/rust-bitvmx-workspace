@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '10 14 * * *'
+    - cron: '58 14 * * *'
 
 jobs:
   nightly:
@@ -11,20 +11,30 @@ jobs:
       matrix:
         submodule: [rust-p2p-protocol, rust-p2p-handler, rust-bitvmx-transaction-monitor, rust-bitvmx-transaction-dispatcher, rust-bitvmx-protocol-builder,
          rust-bitvmx-key-manager, rust-bitvmx-client, rust-bitcoin-indexer, rust-bitcoin-coordinator, BitVMX-cpu]
-
     steps:
-      - name: Checkout workspace repository
-        uses: actions/checkout@v2
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
         with:
-          repository: FairgateLabs/rust-bitvmx-workspace
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          path: rust-bitvmx-workspace
+          submodules: recursive
+          fetch-depth: 1
 
-      - name: Call template workflow
-        uses: ./.github/workflows/test_template.yml
+      - name: Set up SSH key for submodule cloning
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Set up git with token authentication
+        run: |
+          git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Call reusable workflow
+        uses: ./.github/workflows/test_template.yml@main  # or @your-branch
         with:
           repo: 'FairgateLabs/rust-bitvmx-workspace'
           submodule_path: ${{ matrix.submodule }}
           cargo_lock_path: '${{ matrix.submodule }}/Cargo.lock'
           target_path: '${{ matrix.submodule }}/target'
-          secrets: inherit

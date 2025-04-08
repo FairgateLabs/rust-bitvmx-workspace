@@ -80,15 +80,10 @@ jobs:
         run: |
           find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
 
-      - name: Cache Cargo dependencies
-        uses: actions/cache@v3
+      - name: Cache Rust dependencies
+        uses: swatinem/rust-cache@v2
         with:
-          path: |
-            ${{ inputs.submodule_path }}/target
-            ${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}
-          key: ${{ runner.os }}-cargo-${{ hashFiles('${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
+          workspace: ${{ inputs.submodule_path }}
 
       ############ DOCKER SETUP OPTIONAL STEPS ############      
       - name: Set up Docker Buildx

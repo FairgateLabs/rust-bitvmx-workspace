@@ -83,7 +83,9 @@ jobs:
       - name: Cache Rust dependencies
         uses: swatinem/rust-cache@v2
         with:
-          workspace: ${{ inputs.submodule_path }}
+          workspaces: |
+            rust-bitvmx-workspace/${{ inputs.submodule_path }}
+          cache-targets: true
 
       ############ DOCKER SETUP OPTIONAL STEPS ############      
       - name: Set up Docker Buildx

@@ -150,14 +150,22 @@ jobs:
           cd ${{ inputs.submodule_path }}
           cargo build --verbose
       
+      - name: Cache workspace target directory
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}-${{ github.run_number }}
+          restore-keys: |
+            ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}
+            ${{ runner.os }}-workspace-target-
+
       - name: Cache submodule target directory
         uses: actions/cache@v3
         with:
           path: ${{ inputs.submodule_path }}/target
-          key: ${{ runner.os }}-target-${{ inputs.submodule_path }}-${{ hashFiles(format('{}/Cargo.lock', inputs.submodule_path)) }}-${{ github.run_number }}
+          key: ${{ runner.os }}-${{ inputs.submodule_path }}-target-${{ github.run_number }}
           restore-keys: |
-            ${{ runner.os }}-target-${{ inputs.submodule_path }}-${{ hashFiles(format('{}/Cargo.lock', inputs.submodule_path)) }}
-            ${{ runner.os }}-target-${{ inputs.submodule_path }}-
+            ${{ runner.os }}-${{ inputs.submodule_path }}-target-
 
       - name: Run tests
         run: |

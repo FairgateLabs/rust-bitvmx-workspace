@@ -80,7 +80,13 @@ jobs:
         run: |
           find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
 
-            # Optimized caching section
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
       - name: Cache Rust toolchain
         uses: actions/cache@v3
         with:
@@ -92,35 +98,14 @@ jobs:
       - name: Cache Cargo registry
         uses: actions/cache@v3
         with:
-          path: |
-            ~/.cargo/registry/index
-            ~/.cargo/registry/cache
+          path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache Git dependencies
         uses: actions/cache@v3
         with:
-          path: |
-            ~/.cargo/git/db
-            ~/.cargo/git/checkouts
-          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache build artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            ${{ github.workspace }}/rust-bitvmx-workspace/${{ inputs.submodule_path }}/target
-            ${{ github.workspace }}/target
-          key: ${{ runner.os }}-cargo-target-${{ hashFiles(format('{0}/{1}/Cargo.lock', github.workspace, inputs.submodule_path)) }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-target-${{ hashFiles(format('{0}/{1}/Cargo.lock', github.workspace, inputs.submodule_path)) }}
-            ${{ runner.os }}-cargo-target-
-
-      - name: Verify submodule paths
-        run: |
-          echo "Workspace path: ${{ github.workspace }}"
-          ls -la ${{ github.workspace }}/rust-bitvmx-workspace/${{ inputs.submodule_path }}
-          test -f ${{ github.workspace }}/rust-bitvmx-workspace/${{ inputs.submodule_path }}/Cargo.toml || exit 1          
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}      
 
       ############ DOCKER SETUP OPTIONAL STEPS ############      
       - name: Set up Docker Buildx
@@ -164,6 +149,15 @@ jobs:
         run: |
           cd ${{ inputs.submodule_path }}
           cargo build --verbose
+      
+      - name: Cache submodule target directory
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.submodule_path }}/target
+          key: ${{ runner.os }}-target-${{ inputs.submodule_path }}-${{ hashFiles(format('{}/Cargo.lock', inputs.submodule_path)) }}-${{ github.run_number }}
+          restore-keys: |
+            ${{ runner.os }}-target-${{ inputs.submodule_path }}-${{ hashFiles(format('{}/Cargo.lock', inputs.submodule_path)) }}
+            ${{ runner.os }}-target-${{ inputs.submodule_path }}-
 
       - name: Run tests
         run: |

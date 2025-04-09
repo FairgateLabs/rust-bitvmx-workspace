@@ -80,16 +80,41 @@ jobs:
         run: |
           find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
 
-      - name: Cache Rust dependencies
+            # Optimized caching section
+      - name: Cache Rust toolchain
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+            ~/.rustup
+            ~/.cargo/bin
+          key: ${{ runner.os }}-rustup-${{ hashFiles('**/rust-toolchain*') }}
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Git dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/git/db
+            ~/.cargo/git/checkouts
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
             ${{ github.workspace }}/rust-bitvmx-workspace/${{ inputs.submodule_path }}/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles(format('{0}/{1}/Cargo.lock', github.workspace, inputs.submodule_path)) }}
+            ${{ github.workspace }}/target
+          key: ${{ runner.os }}-cargo-target-${{ hashFiles(format('{0}/{1}/Cargo.lock', github.workspace, inputs.submodule_path)) }}-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-cargo-
+            ${{ runner.os }}-cargo-target-${{ hashFiles(format('{0}/{1}/Cargo.lock', github.workspace, inputs.submodule_path)) }}
+            ${{ runner.os }}-cargo-target-
 
       - name: Verify submodule paths
         run: |

@@ -105,7 +105,25 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}      
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache workspace target directory
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}-${{ github.run_number }}
+          restore-keys: |
+            ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}
+            ${{ runner.os }}-workspace-target-
+
+      - name: Cache submodule target directory
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.submodule_path }}/target
+          key: ${{ runner.os }}-${{ inputs.submodule_path }}-target-${{ github.run_number }}
+          restore-keys: |
+            ${{ runner.os }}-${{ inputs.submodule_path }}-target-
+
 
       ############ DOCKER SETUP OPTIONAL STEPS ############      
       - name: Set up Docker Buildx
@@ -149,23 +167,6 @@ jobs:
         run: |
           cd ${{ inputs.submodule_path }}
           cargo build --verbose
-      
-      - name: Cache workspace target directory
-        uses: actions/cache@v3
-        with:
-          path: target
-          key: ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}-${{ github.run_number }}
-          restore-keys: |
-            ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}
-            ${{ runner.os }}-workspace-target-
-
-      - name: Cache submodule target directory
-        uses: actions/cache@v3
-        with:
-          path: ${{ inputs.submodule_path }}/target
-          key: ${{ runner.os }}-${{ inputs.submodule_path }}-target-${{ github.run_number }}
-          restore-keys: |
-            ${{ runner.os }}-${{ inputs.submodule_path }}-target-
 
       - name: Run tests
         run: |

@@ -12,8 +12,11 @@ jobs:
         submodule: [rust-p2p-protocol, rust-p2p-handler, rust-bitvmx-transaction-monitor, rust-bitvmx-transaction-dispatcher, rust-bitvmx-protocol-builder,
          rust-bitvmx-key-manager, rust-bitvmx-client, rust-bitcoin-indexer, rust-bitcoin-coordinator, BitVMX-cpu]
     steps:
-      - name: Checkout repository (with submodules)
-        run: git clone --recurse-submodules --depth=1 --branch main --shallow-submodules https://github.com/FairgateLabs/rust-bitvmx-workspace rust-bitvmx-workspace        
+      - uses: actions/checkout@v4
+        with:
+          repository: FairgateLabs/rust-bitvmx-workspace
+          submodules: recursive
+          path: rust-bitvmx-workspace        
 
       - name: Set up SSH key for submodule cloning
         run: |

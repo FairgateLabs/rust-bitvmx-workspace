@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '58 14 * * *'
+    - cron: '29 18 * * *'
 
 jobs:
   nightly:
@@ -12,11 +12,11 @@ jobs:
         submodule: [rust-p2p-protocol, rust-p2p-handler, rust-bitvmx-transaction-monitor, rust-bitvmx-transaction-dispatcher, rust-bitvmx-protocol-builder,
          rust-bitvmx-key-manager, rust-bitvmx-client, rust-bitcoin-indexer, rust-bitcoin-coordinator, BitVMX-cpu]
     steps:
-      - name: Checkout repository (with submodules)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
+          repository: FairgateLabs/rust-bitvmx-workspace
           submodules: recursive
-          fetch-depth: 1
+          path: rust-bitvmx-workspace        
 
       - name: Set up SSH key for submodule cloning
         run: |

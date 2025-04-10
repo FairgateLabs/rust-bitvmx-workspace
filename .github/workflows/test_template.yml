@@ -80,15 +80,50 @@ jobs:
         run: |
           find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
 
-      - name: Cache Cargo dependencies
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Cache Rust toolchain
         uses: actions/cache@v3
         with:
           path: |
-            ${{ inputs.submodule_path }}/target
-            ${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}
-          key: ${{ runner.os }}-cargo-${{ hashFiles('${{ inputs.submodule_path }}/${{ inputs.cargo_lock_path }}') }}
+            ~/.rustup
+            ~/.cargo/bin
+          key: ${{ runner.os }}-rustup-${{ hashFiles('**/rust-toolchain*') }}
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Git dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache workspace target directory
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}-${{ github.run_number }}
           restore-keys: |
-            ${{ runner.os }}-cargo-
+            ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}
+            ${{ runner.os }}-workspace-target-
+
+      - name: Cache submodule target directory
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.submodule_path }}/target
+          key: ${{ runner.os }}-${{ inputs.submodule_path }}-target-${{ github.run_number }}
+          restore-keys: |
+            ${{ runner.os }}-${{ inputs.submodule_path }}-target-
+
 
       ############ DOCKER SETUP OPTIONAL STEPS ############      
       - name: Set up Docker Buildx

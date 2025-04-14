@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '58 14 * * *'
+    - cron: '02 23 * * *'
 
 jobs:
   nightly:
@@ -24,16 +24,10 @@ jobs:
       - name: Set up git with token authentication
         run: |
           git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
-      
-      - uses: actions/checkout@v4
-        with:
-          repository: FairgateLabs/rust-bitvmx-workspace
-          submodules: false
-          path: rust-bitvmx-workspace
 
-      - name: Init submodule
-        run: |
-          git submodule update --init --recursive rust-bitvmx-workspace/${{ matrix.submodule }}
+      - name: Checkout workspace repository
+        run: |          
+          git clone --recurse-submodules --depth=1 --shallow-submodules https://github.com/FairgateLabs/rust-bitvmx-workspace rust-bitvmx-workspace
 
       - name: Call reusable workflow
         uses: ./.github/workflows/test_template.yml@main  # or @your-branch

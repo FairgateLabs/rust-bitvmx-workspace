@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '29 18 * * *'
+    - cron: '58 14 * * *'
 
 jobs:
   nightly:
@@ -12,12 +12,6 @@ jobs:
         submodule: [rust-p2p-protocol, rust-p2p-handler, rust-bitvmx-transaction-monitor, rust-bitvmx-transaction-dispatcher, rust-bitvmx-protocol-builder,
          rust-bitvmx-key-manager, rust-bitvmx-client, rust-bitcoin-indexer, rust-bitcoin-coordinator, BitVMX-cpu]
     steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: FairgateLabs/rust-bitvmx-workspace
-          submodules: recursive
-          path: rust-bitvmx-workspace        
-
       - name: Set up SSH key for submodule cloning
         run: |
           mkdir -p ~/.ssh
@@ -30,6 +24,16 @@ jobs:
       - name: Set up git with token authentication
         run: |
           git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+      
+      - uses: actions/checkout@v4
+        with:
+          repository: FairgateLabs/rust-bitvmx-workspace
+          submodules: false
+          path: rust-bitvmx-workspace
+
+      - name: Init submodule
+        run: |
+          git submodule update --init --recursive rust-bitvmx-workspace/${{ matrix.submodule }}
 
       - name: Call reusable workflow
         uses: ./.github/workflows/test_template.yml@main  # or @your-branch

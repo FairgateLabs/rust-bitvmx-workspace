@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '02 23 * * *'
+    - cron: '03 15 * * *'
 
 jobs:
   nightly:
@@ -30,7 +30,7 @@ jobs:
           git clone --recurse-submodules --depth=1 --shallow-submodules https://github.com/FairgateLabs/rust-bitvmx-workspace rust-bitvmx-workspace
 
       - name: Call reusable workflow
-        uses: ./.github/workflows/test_template.yml@main  # or @your-branch
+        uses: ./rust-bitvmx-workspace/.github/workflows/test_template.yml@main  # or @your-branch
         with:
           repo: 'FairgateLabs/rust-bitvmx-workspace'
           submodule_path: ${{ matrix.submodule }}

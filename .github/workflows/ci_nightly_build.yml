@@ -2,8 +2,15 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '18 13 * * *'
+    - cron: '11 15 * * *'
 
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+  
 jobs:
   nightly:
     strategy:
@@ -21,33 +28,12 @@ jobs:
           BitVMX-cpu
         ]
 
-    uses: ./.github/workflows/test_template.yml
+    uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/test_template.yml@main
     with:
       repo: 'FairgateLabs/rust-bitvmx-workspace'
       submodule_path: ${{ matrix.submodule }}
       cargo_lock_path: '${{ matrix.submodule }}/Cargo.lock'
       target_path: '${{ matrix.submodule }}/target'
-    secrets:
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      REPO_ACCESS_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-
-
-    # steps:
-    #   - name: Set up SSH key for submodule cloning
-    #     run: |
-    #       mkdir -p ~/.ssh
-    #       echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-    #       chmod 600 ~/.ssh/id_rsa
-    #       ssh-keyscan github.com >> ~/.ssh/known_hosts
-    #     env:
-    #       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-
-    #   - name: Set up git with token authentication
-    #     run: |
-    #       git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
-
-    #   - name: Checkout workspace repository
-    #     run: |          
-    #       git clone --recurse-submodules --depth=1 --shallow-submodules https://github.com/FairgateLabs/rust-bitvmx-workspace rust-bitvmx-workspace
-
+    secrets: inherit
+      
         

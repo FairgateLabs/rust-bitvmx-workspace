@@ -111,9 +111,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: target
-          key: ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}-${{ github.run_number }}
+          key: ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-workspace-target-${{ hashFiles('Cargo.lock') }}
             ${{ runner.os }}-workspace-target-
 
       - name: Cache submodule target directory

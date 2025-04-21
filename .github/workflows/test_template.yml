@@ -47,14 +47,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up SSH key for submodule cloning
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Set up SSH for submodule cloning
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Set up git with token authentication
         run: |
@@ -184,19 +180,30 @@ jobs:
           compose-file: "./${{ inputs.submodule_path }}/${{ inputs.docker_compose_path }}"
       ############ END DOCKER OPTIONAL SETUP STEPS ############
 
-      - name: Debug file tree
-        run: |
-          echo "Showing folder structure before build:"
-          tree -L 2 || find . -maxdepth 2
-
       - name: Build project
-        run: |
-          ls -l
-          pwd            
-          cd ${{ inputs.submodule_path }}
-          cargo build --verbose
-
+        working-directory: ${{ inputs.submodule_path }}
+        run: cargo build --verbose
+      
       - name: Run tests
-        run: |          
-          cd ${{ inputs.submodule_path }}
-          cargo test --verbose
+        working-directory: ${{ inputs.submodule_path }}
+        run: cargo test --verbose
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅' || '❌' }} *GitHub Action Result* for `${{ github.repository }}`",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ github.workflow }}* job `${{ github.job }}` has *${{ job.status }}* :rocket:\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View full run>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

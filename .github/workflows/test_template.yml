@@ -31,6 +31,10 @@ on:
         description: 'Path to docker-compose file'
         required: false
         type: string
+      nightly:
+        description: 'Flag to determine if nightly triggered'
+        required: false
+        type: boolean
     secrets:
       REPO_ACCESS_TOKEN:
         description: 'Token to access the repository'
@@ -78,7 +82,15 @@ jobs:
 
       - name: Move all submodules to correct location
         run: |
-          find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
+          if [[ "$NIGHTLY" == "true" ]]; then
+            echo "Running in nightly (from workspace)"
+            find rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} rust-bitvmx-workspace/${{ inputs.submodule_path }}/ \;
+          else
+            echo "Running in submodule-triggered mode"
+            find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
+          fi
+        env:
+          NIGHTLY: ${{ inputs.nightly }}
 
       - name: Install Rust
         uses: actions-rs/toolchain@v1

@@ -83,7 +83,18 @@ jobs:
       - name: Move all submodules to correct location
         run: |
           if [[ "$NIGHTLY" == "true" ]]; then
-            echo "Running in nightly (from workspace)"
+            echo "Rearranging submodules for build"
+            ROOT="/home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}"
+            cd "$ROOT/rust-bitvmx-workspace"
+            for dir in */; do
+              name="${dir%/}"
+              if [[ "$name" != "${{ inputs.submodule_path }}" ]]; then
+                echo "Moving $name to $ROOT"
+                mv "$name" "$ROOT/"
+              fi
+            done
+            echo "Moved all other submodules to top-level"
+            rm -rf "$ROOT/rust-bitvmx-workspace"
           else
             echo "Running in submodule-triggered mode"
             find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
@@ -173,20 +184,19 @@ jobs:
           compose-file: "./${{ inputs.submodule_path }}/${{ inputs.docker_compose_path }}"
       ############ END DOCKER OPTIONAL SETUP STEPS ############
 
+      - name: Debug file tree
+        run: |
+          echo "Showing folder structure before build:"
+          tree -L 2 || find . -maxdepth 2
+
       - name: Build project
         run: |
           ls -l
-          pwd
+          pwd            
           cd ${{ inputs.submodule_path }}
           cargo build --verbose
 
       - name: Run tests
-        run: |
-          if [[ "$NIGHTLY" == "true" ]]; then
-          run: |
-            cd rust-bitvmx-workspace
-            cargo build --workspace --verbose
-          else
-            cd ${{ inputs.submodule_path }}
-            cargo test --verbose
-          fi
+        run: |          
+          cd ${{ inputs.submodule_path }}
+          cargo test --verbose

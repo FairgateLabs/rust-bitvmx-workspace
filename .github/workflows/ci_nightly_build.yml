@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '58 14 * * *'
+    - cron: '03 18 * * *'
 
 env:
   CARGO_TERM_COLOR: always

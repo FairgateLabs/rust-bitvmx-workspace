@@ -68,3 +68,6 @@
 	path = bitvmx-test-coordination-system
 	url = ../bitvmx-test-coordination-system
 	branch = main
+[submodule "rust-fakep2p"]
+	path = rust-fakep2p
+	url = ../rust-fakep2p

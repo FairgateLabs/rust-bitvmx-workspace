@@ -71,3 +71,6 @@
 [submodule "rust-fakep2p"]
 	path = rust-fakep2p
 	url = ../rust-fakep2p
+[submodule "rust-bitvmx-zk-proof"]
+	path = rust-bitvmx-zk-proof
+	url = git@github.com:FairgateLabs/rust-bitvmx-zk-proof.git

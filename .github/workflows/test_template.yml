@@ -42,21 +42,44 @@ on:
       SSH_PRIVATE_KEY:
         description: 'Private SSH key to authenticate with GitHub'
         required: true
+      SLACK_WEBHOOK_URL:
+        description: 'Webhook endpoint to post on channel'
+        required: false
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      ROOT: "/home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}"
+      REPO_NAME: ${{ github.event.repository.name }}
+      BRANCH: ${{ github.head_ref || 'main' }}
+
     steps:
-      - name: Set up SSH for submodule cloning
+      # Validate Inputs
+      - name: Validate Inputs
+        run: |
+          if [[ -z "${{ inputs.repo }}" ]]; then
+            echo "Error: 'repo' input cannot be empty."
+            exit 1
+          fi
+          if [[ -z "${{ inputs.submodule_path }}" ]]; then
+            echo "Error: 'submodule_path' input cannot be empty."
+            exit 1
+          fi
+
+      # Set up SSH for submodule cloning
+      - name: Configure SSH for Git Submodule Access
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Set up git with token authentication
+      # Set up git with token authentication
+      - name: Configure Git with Token Authentication
         run: |
           git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
      
-      - name: Checkout workspace repository
+      # Checkout workspace repository
+      - name: Checkout Workspace Repository
         run: |
           PR_TITLE="${{ github.event.pull_request.title }}"
           if [[ "$PR_TITLE" =~ ^\[(.*)\] ]]; then
@@ -64,23 +87,19 @@ jobs:
           else
             BRANCH="main"
           fi
-          echo "Checking out branch: $BRANCH"
+          echo "Checking out repository: $REPO_NAME on branch: $BRANCH"
           git clone --recurse-submodules --depth=1 --branch $BRANCH --shallow-submodules https://github.com/${{ inputs.repo }} rust-bitvmx-workspace
       
       - name: Checkout current repository
         run: |
-          BRANCH="${{ github.head_ref }}"
-          if [[ -z "$BRANCH" ]]; then
-            BRANCH="main"
-          fi
+          echo "Checking out branch: $BRANCH"
           git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
-          ls -l ${{ inputs.submodule_path }}
 
-      - name: Move all submodules to correct location
+      # Nightly build submodule handling
+      - name: Handle Submodules for Nightly Build
         run: |
           if [[ "$NIGHTLY" == "true" ]]; then
             echo "Rearranging submodules for build"
-            ROOT="/home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}"
             cd "$ROOT/rust-bitvmx-workspace"
             for dir in */; do
               name="${dir%/}"
@@ -98,34 +117,41 @@ jobs:
         env:
           NIGHTLY: ${{ inputs.nightly }}
 
-      - name: Install Rust
+      # Install Rust
+      - name: Install Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
 
-      - name: Cache Rust toolchain
+      # Cache Rust toolchain
+      - name: Cache Rust Toolchain
         uses: actions/cache@v3
         with:
           path: |
             ~/.rustup
             ~/.cargo/bin
           key: ${{ runner.os }}-rustup-${{ hashFiles('**/rust-toolchain*') }}
+          restore-keys: |
+            ${{ runner.os }}-rustup-
 
-      - name: Cache Cargo registry
+      # Cache Cargo registry
+      - name: Cache Cargo Registry
         uses: actions/cache@v3
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Cache Git dependencies
+      # Cache Git dependencies
+      - name: Cache Git Dependencies
         uses: actions/cache@v3
         with:
           path: ~/.cargo/git
           key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Cache workspace target directory
+      # Cache workspace target directory
+      - name: Cache Workspace Target Directory
         uses: actions/cache@v3
         with:
           path: target
@@ -133,14 +159,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-workspace-target-
 
-      - name: Cache submodule target directory
+      # Cache submodule target directory
+      - name: Cache Submodule Target Directory
         uses: actions/cache@v3
         with:
           path: ${{ inputs.submodule_path }}/target
           key: ${{ runner.os }}-${{ inputs.submodule_path }}-target-${{ github.run_number }}
           restore-keys: |
             ${{ runner.os }}-${{ inputs.submodule_path }}-target-
-
 
       ############ DOCKER SETUP OPTIONAL STEPS ############      
       - name: Set up Docker Buildx
@@ -180,14 +206,17 @@ jobs:
           compose-file: "./${{ inputs.submodule_path }}/${{ inputs.docker_compose_path }}"
       ############ END DOCKER OPTIONAL SETUP STEPS ############
 
-      - name: Build project
+      # Build project
+      - name: Build Project
         working-directory: ${{ inputs.submodule_path }}
         run: cargo build --verbose
       
-      - name: Run tests
+      # Run tests
+      - name: Run Tests
         working-directory: ${{ inputs.submodule_path }}
         run: cargo test --verbose
 
+      # Notify Slack
       - name: Notify Slack
         if: always()
         uses: slackapi/slack-github-action@v1.24.0
@@ -200,7 +229,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*${{ github.workflow }}* job `${{ github.job }}` has *${{ job.status }}* :rocket:\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View full run>"
+                    "text": "*${{ github.workflow }}* job `${{ github.job }}` has *${{ job.status }}* :rocket:\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View full run>\n*PR Author:* ${{ github.event.pull_request.user.login }}\n*PR Link:* <${{ github.event.pull_request.html_url }}|View Pull Request>"
                   }
                 }
               ]

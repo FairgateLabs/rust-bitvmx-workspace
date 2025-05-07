@@ -124,7 +124,17 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-
+      
+      # Lint code with rustfmt
+      - name: Code Formatting check with rustfmt
+        working-directory: ${{ inputs.submodule_path }}
+        run: cargo fmt --all -- --check
+    
+      # Lint code with Clippy
+      - name: Code Linting with Clippy
+        working-directory: ${{ inputs.submodule_path }}
+        run: cargo clippy --all-targets --all-features -- -D warnings
+    
       # Cache Rust toolchain
       - name: Cache Rust Toolchain
         uses: actions/cache@v3

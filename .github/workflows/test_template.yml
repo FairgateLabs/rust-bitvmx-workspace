@@ -164,7 +164,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ inputs.submodule_path }}/target
-          key: ${{ runner.os }}-${{ inputs.submodule_path }}-target-${{ github.run_number }}
+          key: ${{ runner.os }}-${{ inputs.submodule_path }}-target-
           restore-keys: |
             ${{ runner.os }}-${{ inputs.submodule_path }}-target-
 

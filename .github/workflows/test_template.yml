@@ -67,6 +67,17 @@ jobs:
             exit 1
           fi
 
+      # Free up disk to get more space for tests. Evaluate late if this should be removed
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+      
+      # Check disk space
+      - name: Check disk space
+        run: df -h
+
       # Set up SSH for submodule cloning
       - name: Configure SSH for Git Submodule Access
         uses: webfactory/ssh-agent@v0.5.4
@@ -164,7 +175,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ inputs.submodule_path }}/target
-          key: ${{ runner.os }}-${{ inputs.submodule_path }}-target-${{ github.run_number }}
+          key: ${{ runner.os }}-${{ inputs.submodule_path }}-target-
           restore-keys: |
             ${{ runner.os }}-${{ inputs.submodule_path }}-target-
 
@@ -206,15 +217,24 @@ jobs:
           compose-file: "./${{ inputs.submodule_path }}/${{ inputs.docker_compose_path }}"
       ############ END DOCKER OPTIONAL SETUP STEPS ############
 
+      - name: Check disk space
+        run: df -h
+
       # Build project
       - name: Build Project
         working-directory: ${{ inputs.submodule_path }}
         run: cargo build --verbose
+
+      - name: Check disk space
+        run: df -h
       
       # Run tests
       - name: Run Tests
         working-directory: ${{ inputs.submodule_path }}
         run: cargo test --verbose
+      
+      - name: Check disk space
+        run: df -h
 
       # Notify Slack
       - name: Notify Slack

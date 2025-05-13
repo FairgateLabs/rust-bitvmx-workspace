@@ -66,14 +66,13 @@ jobs:
             echo "Error: 'submodule_path' input cannot be empty."
             exit 1
           fi
-
-      # Free up disk to get more space for tests. Evaluate late if this should be removed
-      - name: Free up disk space
+      
+      - name: Cleanup Disk Space
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-      
+          sudo rm -rf ~/Library/Caches
+            
       # Check disk space
       - name: Check disk space
         run: df -h
@@ -217,16 +216,10 @@ jobs:
           compose-file: "./${{ inputs.submodule_path }}/${{ inputs.docker_compose_path }}"
       ############ END DOCKER OPTIONAL SETUP STEPS ############
 
-      - name: Check disk space
-        run: df -h
-
       # Build project
-      - name: Build Project
-        working-directory: ${{ inputs.submodule_path }}
-        run: cargo build --verbose
-
-      - name: Check disk space
-        run: df -h
+      # - name: Build Project
+      #   working-directory: ${{ inputs.submodule_path }}
+      #   run: cargo build --verbose
       
       # Run tests
       - name: Run Tests

@@ -236,7 +236,7 @@ jobs:
         with:
           payload: |
             {
-              "text": "${{ job.status == 'success' && '✅' || '❌' }} *GitHub Action Result* for `${{ github.repository }}`",
+              "text": "${{ job.status == 'success' && '✅' || '❌' }} *GitHub Action Result* for `${{ github.repository }}`\n*${{ github.workflow }}* job `${{ github.job }}` has *${{ job.status }}* :rocket:\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View full run>\n*PR Author:* ${{ github.event.pull_request.user.login }}\n*PR Link:* <${{ github.event.pull_request.html_url }}|View Pull Request>",
               "blocks": [
                 {
                   "type": "section",

@@ -35,6 +35,10 @@ on:
         description: 'Flag to determine if nightly triggered'
         required: false
         type: boolean
+      clippy:
+        description: 'Flag to determine if format with clippy is triggered'
+        required: false
+        type: boolean
     secrets:
       REPO_ACCESS_TOKEN:
         description: 'Token to access the repository'
@@ -143,6 +147,7 @@ jobs:
 
       # Lint code with Clippy
       - name: Lint with Clippy
+        if: ${{ inputs.clippy }}
         continue-on-error: true
         working-directory: ${{ inputs.submodule_path }}
         run: cargo clippy --all-targets --all-features -- -D warnings

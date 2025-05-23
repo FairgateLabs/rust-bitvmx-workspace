@@ -74,4 +74,7 @@
 [submodule "rust-bitvmx-zk-proof"]
 	path = rust-bitvmx-zk-proof
 	url = ../rust-bitvmx-zk-proof
+[submodule "rust-bitvmx-wallet"]
+	path = rust-bitvmx-wallet
+	url = ../rust-bitvmx-wallet
 

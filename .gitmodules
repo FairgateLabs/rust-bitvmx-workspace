@@ -10,10 +10,6 @@
 	path = rust-bitvmx-protocol-builder
 	url = ../rust-bitvmx-protocol-builder
 	branch = main
-[submodule "rust-p2p-handler"]
-	path = rust-p2p-handler
-	url = ../rust-p2p-handler
-	branch = main
 [submodule "rust-bitcoin-coordinator"]
 	path = rust-bitcoin-coordinator
 	url = ../rust-bitcoin-coordinator
@@ -29,10 +25,6 @@
 [submodule "rust-bitvmx-transaction-monitor"]
 	path = rust-bitvmx-transaction-monitor
 	url = ../rust-bitvmx-transaction-monitor
-	branch = main
-[submodule "rust-p2p-protocol"]
-	path = rust-p2p-protocol
-	url = ../rust-p2p-protocol
 	branch = main
 [submodule "rust-bitcoin-indexer"]
 	path = rust-bitcoin-indexer

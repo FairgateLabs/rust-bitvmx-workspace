@@ -63,10 +63,13 @@
 [submodule "rust-fakep2p"]
 	path = rust-fakep2p
 	url = ../rust-fakep2p
+        branch = main
 [submodule "rust-bitvmx-zk-proof"]
 	path = rust-bitvmx-zk-proof
 	url = ../rust-bitvmx-zk-proof
+        branch = main
 [submodule "rust-bitvmx-wallet"]
 	path = rust-bitvmx-wallet
 	url = ../rust-bitvmx-wallet
+        branch = main
 

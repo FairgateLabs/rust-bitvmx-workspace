@@ -42,10 +42,6 @@
 	path = BitVMX-CPU
 	url = ../BitVMX-CPU
 	branch = main
-[submodule "rust-bitvmx-job-dispatcher"]
-	path = rust-bitvmx-job-dispatcher
-	url = ../rust-bitvmx-job-dispatcher
-	branch = main
 [submodule "rust-bitvmx-broker"]
 	path = rust-bitvmx-broker
 	url = ../rust-bitvmx-broker

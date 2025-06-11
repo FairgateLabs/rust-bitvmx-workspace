@@ -18,9 +18,9 @@
 	path = rust-bitvmx-storage-backend
 	url = ../rust-bitvmx-storage-backend
 	branch = main
-[submodule "rust-bitvmx-transaction-dispatcher"]
-	path = rust-bitvmx-transaction-dispatcher
-	url = ../rust-bitvmx-transaction-dispatcher
+[submodule "rust-bitvmx-job-dispatcher"]
+	path = rust-bitvmx-job-dispatcher
+	url = ../rust-bitvmx-job-dispatcher
 	branch = main
 [submodule "rust-bitvmx-transaction-monitor"]
 	path = rust-bitvmx-transaction-monitor

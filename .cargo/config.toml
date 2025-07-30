@@ -1,0 +1,5 @@
+[patch."https://github.com/FairgateLabs/rust-bitvmx-settings.git"]
+bitvmx-settings = { path = "rust-bitvmx-settings" }
+
+[patch."https://github.com/FairgateLabs/rust-bitvmx-storage-backend.git"]
+rust-bitvmx-storage-backend = { path = "rust-bitvmx-storage-backend" }

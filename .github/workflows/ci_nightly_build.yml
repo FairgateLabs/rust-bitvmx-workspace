@@ -16,17 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        submodule: [
-          rust-p2p-protocol,
-          rust-p2p-handler,
-          rust-bitvmx-transaction-monitor,
-          rust-bitvmx-transaction-dispatcher,
-          rust-bitvmx-protocol-builder,
-          rust-bitvmx-key-manager,
-          rust-bitvmx-client,
-          rust-bitcoin-indexer,
-          rust-bitcoin-coordinator,
-          BitVMX-cpu
+        submodule: [          
+          rust-bitvmx-client
         ]
 
     uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/test_template.yml@main

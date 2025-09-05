@@ -35,6 +35,10 @@ on:
         description: 'Flag to determine if nightly triggered'
         required: false
         type: boolean
+      cargo_features:
+        description: 'Cargo features to enable (space or comma separated)'
+        required: false
+        type: string
       clippy:
         description: 'Flag to determine if format with clippy is triggered'
         required: false
@@ -150,7 +154,12 @@ jobs:
         if: ${{ inputs.clippy }}
         continue-on-error: true
         working-directory: ${{ inputs.submodule_path }}
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: |
+          if [ -n "${{ inputs.cargo_features }}" ]; then
+            cargo clippy --all-targets --features "${{ inputs.cargo_features }}" -- -D warnings
+          else
+            cargo clippy --all-targets -- -D warnings
+          fi
 
       # Cache Rust toolchain
       - name: Cache Rust Toolchain
@@ -241,7 +250,12 @@ jobs:
       # Run tests
       - name: Run Tests
         working-directory: ${{ inputs.submodule_path }}
-        run: cargo test --verbose
+        run: |
+          if [ -n "${{ inputs.cargo_features }}" ]; then
+            cargo test --verbose --features "${{ inputs.cargo_features }}"
+          else
+            cargo test --verbose
+          fi
       
       - name: Check disk space
         run: df -h

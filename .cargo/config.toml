@@ -3,3 +3,25 @@ bitvmx-settings = { path = "rust-bitvmx-settings" }
 
 [patch."https://github.com/FairgateLabs/rust-bitvmx-storage-backend.git"]
 rust-bitvmx-storage-backend = { path = "rust-bitvmx-storage-backend" }
+
+[patch."https://github.com/FairgateLabs/rust-bitvmx-key-manager.git"]
+bitvmx-key-manager = { path = "rust-bitvmx-key-manager" }
+
+[patch."https://github.com/FairgateLabs/rust-bitvmx-bitcoin-rpc.git"]
+bitvmx-bitcoin-rpc = { path = "rust-bitvmx-bitcoin-rpc" }
+
+[patch."https://github.com/FairgateLabs/rust-bitcoind.git"]
+bitcoind = { path = "rust-bitcoind" }
+
+[patch."https://github.com/FairgateLabs/rust-bitcoin-indexer.git"]
+bitcoin-indexer = { path = "rust-bitcoin-indexer" }
+
+[patch."https://github.com/FairgateLabs/rust-bitvmx-transaction-monitor.git"]
+bitvmx-transaction-monitor = { path = "rust-bitvmx-transaction-monitor" }
+
+[patch."https://github.com/FairgateLabs/rust-bitcoin-coordinator"]
+bitcoin-coordinator = { path = "rust-bitcoin-coordinator" }
+
+[patch."https://github.com/FairgateLabs/rust-bitvmx-protocol-builder.git"]
+bitvmx-protocol-builder = { path = "rust-bitvmx-protocol-builder" }
+

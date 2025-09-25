@@ -53,9 +53,9 @@
 	path = bitvmx-test-coordination-system
 	url = ../bitvmx-test-coordination-system
 	branch = main
-[submodule "rust-fakep2p"]
-	path = rust-fakep2p
-	url = ../rust-fakep2p
+[submodule "rust-bitvmx-operator-comms"]
+	path = rust-bitvmx-operator-comms
+	url = ../rust-rust-bitvmx-operator-comms
         branch = main
 [submodule "rust-bitvmx-zk-proof"]
 	path = rust-bitvmx-zk-proof

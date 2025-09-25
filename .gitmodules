@@ -55,7 +55,7 @@
 	branch = main
 [submodule "rust-bitvmx-operator-comms"]
 	path = rust-bitvmx-operator-comms
-	url = ../rust-rust-bitvmx-operator-comms
+	url = ../rust-bitvmx-operator-comms
         branch = main
 [submodule "rust-bitvmx-zk-proof"]
 	path = rust-bitvmx-zk-proof
@@ -65,4 +65,3 @@
 	path = rust-bitvmx-wallet
 	url = ../rust-bitvmx-wallet
         branch = main
-

@@ -43,6 +43,11 @@ on:
         description: 'Flag to determine if format with clippy is triggered'
         required: false
         type: boolean
+      build_cpu:
+        description: 'Flag to determine if we need to build the CPU'
+        required: false
+        type: boolean
+        default: false
     secrets:
       REPO_ACCESS_TOKEN:
         description: 'Token to access the repository'
@@ -63,40 +68,49 @@ jobs:
       BRANCH: ${{ github.head_ref || 'main' }}
 
     steps:
-      # Validate Inputs
       - name: Validate Inputs
         run: |
-          if [[ -z "${{ inputs.repo }}" ]]; then
-            echo "Error: 'repo' input cannot be empty."
+          ERRORS=()
+          [[ -z "${{ inputs.repo }}" ]] && ERRORS+=("'repo' input cannot be empty")
+          [[ -z "${{ inputs.submodule_path }}" ]] && ERRORS+=("'submodule_path' input cannot be empty")
+          [[ -z "${{ inputs.cargo_lock_path }}" ]] && ERRORS+=("'cargo_lock_path' input cannot be empty")
+          [[ -z "${{ inputs.target_path }}" ]] && ERRORS+=("'target_path' input cannot be empty")
+          
+          if [[ "${{ inputs.docker_required }}" == "true" ]]; then
+            [[ -z "${{ inputs.dockerfile_path }}" ]] && ERRORS+=("'dockerfile_path' required when docker_required=true")
+            [[ -z "${{ inputs.docker_compose_path }}" ]] && ERRORS+=("'docker_compose_path' required when docker_required=true")
+          fi
+          
+          if [[ ${#ERRORS[@]} -gt 0 ]]; then
+            printf "❌ Validation errors:\n"
+            printf "  - %s\n" "${ERRORS[@]}"
             exit 1
           fi
-          if [[ -z "${{ inputs.submodule_path }}" ]]; then
-            echo "Error: 'submodule_path' input cannot be empty."
-            exit 1
-          fi
+          echo "✅ All inputs validated successfully"
       
       - name: Cleanup Disk Space
         run: |
+          echo "🧹 Cleaning up disk space..."
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
-          sudo rm -rf ~/Library/Caches
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          echo "✅ Disk cleanup completed"
             
-      # Check disk space
       - name: Check disk space
         run: df -h
 
-      # Set up SSH for submodule cloning
       - name: Configure SSH for Git Submodule Access
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Set up git with token authentication
       - name: Configure Git with Token Authentication
         run: |
-          git config --global url."https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          echo "::add-mask::${{ secrets.REPO_ACCESS_TOKEN }}"
+          git config --global url."https://x-access-token:${{ secrets.REPO_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
      
-      # Checkout workspace repository
       - name: Checkout Workspace Repository
         run: |
           PR_TITLE="${{ github.event.pull_request.title }}"
@@ -113,12 +127,19 @@ jobs:
           echo "Checking out branch: $BRANCH"
           git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
 
-      # Nightly build submodule handling
       - name: Handle Submodules for Nightly Build
         run: |
           if [[ "$NIGHTLY" == "true" ]]; then
             echo "Rearranging submodules for build"
             cd "$ROOT/rust-bitvmx-workspace"
+            
+            # Copy .cargo/config.toml to preserve patches
+            if [[ -f ".cargo/config.toml" ]]; then
+              echo "Copying .cargo/config.toml to preserve patches"
+              mkdir -p "$ROOT/.cargo"
+              cp ".cargo/config.toml" "$ROOT/.cargo/"
+            fi
+            
             for dir in */; do
               name="${dir%/}"
               if [[ "$name" != "${{ inputs.submodule_path }}" ]]; then
@@ -130,12 +151,19 @@ jobs:
             rm -rf "$ROOT/rust-bitvmx-workspace"
           else
             echo "Running in submodule-triggered mode"
+            
+            # Copy .cargo/config.toml to preserve patches in submodule mode
+            if [[ -f "/home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace/.cargo/config.toml" ]]; then
+              echo "Copying .cargo/config.toml to preserve patches"
+              mkdir -p "/home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/.cargo"
+              cp "/home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace/.cargo/config.toml" "/home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/.cargo/"
+            fi
+            
             find /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/rust-bitvmx-workspace -mindepth 1 -maxdepth 1 ! -name '${{ inputs.submodule_path }}' -exec mv {} /home/runner/work/${{ inputs.submodule_path }}/${{ inputs.submodule_path }}/ \;
           fi
         env:
           NIGHTLY: ${{ inputs.nightly }}
 
-      # Install Rust
       - name: Install Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -143,25 +171,17 @@ jobs:
           toolchain: stable
           override: true
       
-      # Lint code with rustfmt
       - name: Lint with rustfmt
         continue-on-error: true
         working-directory: ${{ inputs.submodule_path }}
         run: cargo fmt --all -- --check
 
-      # Lint code with Clippy
       - name: Lint with Clippy
         if: ${{ inputs.clippy }}
         continue-on-error: true
         working-directory: ${{ inputs.submodule_path }}
-        run: |
-          if [ -n "${{ inputs.cargo_features }}" ]; then
-            cargo clippy --all-targets --features "${{ inputs.cargo_features }}" -- -D warnings
-          else
-            cargo clippy --all-targets -- -D warnings
-          fi
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
-      # Cache Rust toolchain
       - name: Cache Rust Toolchain
         uses: actions/cache@v3
         with:
@@ -172,21 +192,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-rustup-
 
-      # Cache Cargo registry
       - name: Cache Cargo Registry
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
 
-      # Cache Git dependencies
-      - name: Cache Git Dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
-
-      # Cache workspace target directory
       - name: Cache Workspace Target Directory
         uses: actions/cache@v3
         with:
@@ -195,7 +211,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-workspace-target-
 
-      # Cache submodule target directory
       - name: Cache Submodule Target Directory
         uses: actions/cache@v3
         with:
@@ -226,23 +241,28 @@ jobs:
         if: ${{ inputs.docker_required }}
         uses: docker/build-push-action@v4
         with:
-          run: |
-            ls -l
-            pwd
           context: ./${{ inputs.submodule_path }}
           file: ./${{ inputs.submodule_path }}/${{ inputs.dockerfile_path }}
           push: false  # Build locally
-          tags: user/repository:latest          
+          tags: user/repository:latest
 
       - name: Run docker-compose
         if: ${{ inputs.docker_required }}
         uses: hoverkraft-tech/compose-action@v2.0.1
         with:
-          context: ./
           compose-file: "./${{ inputs.submodule_path }}/${{ inputs.docker_compose_path }}"
+
       ############ END DOCKER OPTIONAL SETUP STEPS ############
 
-      # Build project
+      # Build BitVMX-CPU dependencies
+      - name: Build BitVMX-CPU Emulator
+        if: ${{ inputs.build_cpu }}
+        working-directory: ${{ inputs.submodule_path }}
+        run: |
+          chmod +x scripts/build-emulator.sh
+          scripts/build-emulator.sh
+
+      # # Build project
       # - name: Build Project
       #   working-directory: ${{ inputs.submodule_path }}
       #   run: cargo build --verbose
@@ -251,14 +271,27 @@ jobs:
       - name: Run Tests
         working-directory: ${{ inputs.submodule_path }}
         run: |
-          if [ -n "${{ inputs.cargo_features }}" ]; then
-            cargo test --verbose --features "${{ inputs.cargo_features }}"
+          if [[ "${{ inputs.nightly }}" == "true" ]]; then
+            echo "🌙 Running nightly tests with custom script..."
+            if [[ ! -f "scripts/run-tests.sh" ]]; then
+              echo "❌ Test script not found: scripts/run-tests.sh"
+              exit 1
+            fi
+            chmod +x scripts/run-tests.sh
+            scripts/run-tests.sh "${{ inputs.nightly }}" "${{ inputs.docker_compose_path }}" "${{ inputs.cargo_features }}"
           else
-            cargo test --verbose
+            echo "Running regular tests with cargo..."
+            if [[ -n "${{ inputs.cargo_features }}" ]]; then
+              echo "📦 Using features: ${{ inputs.cargo_features }}"
+              cargo test --verbose --features "${{ inputs.cargo_features }}"
+            else
+              echo "📦 Running tests without additional features"
+              cargo test --verbose
+            fi
           fi
-      
-      - name: Check disk space
-        run: df -h
+        env:
+          CI: true
+          RUST_BACKTRACE: 1
 
       # Notify Slack
       - name: Notify Slack

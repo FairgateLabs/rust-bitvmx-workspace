@@ -8,17 +8,21 @@ env:
   CARGO_TERM_COLOR: always
 
 concurrency:
-  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
-  cancel-in-progress: false
-  
+  group: 'nightly-build-${{ github.ref }}'
+  cancel-in-progress: true
+
 jobs:
   nightly:
     strategy:
       fail-fast: false
       matrix:
-        submodule: [          
-          rust-bitvmx-client
-        ]
+        include:
+          - submodule: rust-bitvmx-client
+            cargo_features: 'regtest'
+            clippy: true
+            build_cpu: true
+            dockerfile_path: tests/Dockerfile
+            docker_compose_path: tests/docker-compose.yml
 
     uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/test_template.yml@main
     with:
@@ -27,6 +31,10 @@ jobs:
       cargo_lock_path: '${{ matrix.submodule }}/Cargo.lock'
       target_path: '${{ matrix.submodule }}/target'
       nightly: true
+      clippy: ${{ matrix.clippy }}
+      cargo_features: ${{ matrix.cargo_features }}
+      build_cpu: ${{ matrix.build_cpu }}
+      docker_required: true
+      dockerfile_path: ${{ matrix.dockerfile_path }}
+      docker_compose_path: ${{ matrix.docker_compose_path }}
     secrets: inherit
-      
-        

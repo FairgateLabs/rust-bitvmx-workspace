@@ -37,3 +37,8 @@ bitvmx-operator-comms = { path = "rust-bitvmx-operator-comms" }
 
 [patch."https://github.com/FairgateLabs/rust-bitvmx-wallet.git"]
 bitvmx-wallet = { path = "rust-bitvmx-wallet" }
+
+[patch."https://github.com/FairgateLabs/BitVMX-CPU.git"]
+emulator = { path = "BitVMX-CPU/emulator" }
+bitvmx-cpu-definitions = { path = "BitVMX-CPU/definitions" }
+bitcoin-script-riscv = { path = "BitVMX-CPU/bitcoin-script-riscv" }

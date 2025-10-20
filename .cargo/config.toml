@@ -1,44 +1,76 @@
-[patch."https://github.com/FairgateLabs/rust-bitvmx-settings.git"]
-bitvmx-settings = { path = "rust-bitvmx-settings" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-settings.git"]
+#bitvmx-settings = { path = "rust-bitvmx-settings" }
 
-[patch."https://github.com/FairgateLabs/rust-bitvmx-storage-backend.git"]
-rust-bitvmx-storage-backend = { path = "rust-bitvmx-storage-backend" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-storage-backend.git"]
+#rust-bitvmx-storage-backend = { path = "rust-bitvmx-storage-backend" }
 
-[patch."https://github.com/FairgateLabs/rust-bitvmx-key-manager.git"]
-bitvmx-key-manager = { path = "rust-bitvmx-key-manager" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-key-manager.git"]
+#bitvmx-key-manager = { path = "rust-bitvmx-key-manager" }
 
-[patch."https://github.com/FairgateLabs/rust-bitvmx-bitcoin-rpc.git"]
-bitvmx-bitcoin-rpc = { path = "rust-bitvmx-bitcoin-rpc" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-bitcoin-rpc.git"]
+#bitvmx-bitcoin-rpc = { path = "rust-bitvmx-bitcoin-rpc" }
 
-[patch."https://github.com/FairgateLabs/rust-bitcoind.git"]
-bitcoind = { path = "rust-bitcoind" }
+#[patch."https://github.com/FairgateLabs/rust-bitcoind.git"]
+#bitcoind = { path = "rust-bitcoind" }
 
-[patch."https://github.com/FairgateLabs/rust-bitcoin-indexer.git"]
-bitcoin-indexer = { path = "rust-bitcoin-indexer" }
+#[patch."https://github.com/FairgateLabs/rust-bitcoin-indexer.git"]
+#bitcoin-indexer = { path = "rust-bitcoin-indexer" }
 
-[patch."https://github.com/FairgateLabs/rust-bitvmx-transaction-monitor.git"]
-bitvmx-transaction-monitor = { path = "rust-bitvmx-transaction-monitor" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-transaction-monitor.git"]
+#bitvmx-transaction-monitor = { path = "rust-bitvmx-transaction-monitor" }
 
-[patch."https://github.com/FairgateLabs/rust-bitcoin-coordinator"]
-bitcoin-coordinator = { path = "rust-bitcoin-coordinator" }
+#[patch."https://github.com/FairgateLabs/rust-bitcoin-coordinator"]
+#bitcoin-coordinator = { path = "rust-bitcoin-coordinator" }
 
-[patch."https://github.com/FairgateLabs/rust-bitvmx-protocol-builder.git"]
-bitvmx-protocol-builder = { path = "rust-bitvmx-protocol-builder" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-protocol-builder.git"]
+#bitvmx-protocol-builder = { path = "rust-bitvmx-protocol-builder" }
 
-[patch."https://github.com/FairgateLabs/rust-bitvmx-broker.git"]
-bitvmx-broker = { path = "rust-bitvmx-broker" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-broker.git"]
+#bitvmx-broker = { path = "rust-bitvmx-broker" }
 
-[patch."https://github.com/FairgateLabs/rust-bitvmx-job-dispatcher.git"]
-bitvmx-job-dispatcher = { path = "rust-bitvmx-job-dispatcher/dispatcher" }
-bitvmx-job-dispatcher-types = { path = "rust-bitvmx-job-dispatcher/jobtypes" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-job-dispatcher.git"]
+#bitvmx-job-dispatcher = { path = "rust-bitvmx-job-dispatcher/dispatcher" }
+#bitvmx-job-dispatcher-types = { path = "rust-bitvmx-job-dispatcher/jobtypes" }
 
-[patch."https://github.com/FairgateLabs/rust-bitvmx-operator-comms.git"]
-bitvmx-operator-comms = { path = "rust-bitvmx-operator-comms" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-operator-comms.git"]
+#bitvmx-operator-comms = { path = "rust-bitvmx-operator-comms" }
 
-[patch."https://github.com/FairgateLabs/rust-bitvmx-wallet.git"]
-bitvmx-wallet = { path = "rust-bitvmx-wallet" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-wallet.git"]
+#bitvmx-wallet = { path = "rust-bitvmx-wallet" }
 
-[patch."https://github.com/FairgateLabs/BitVMX-CPU.git"]
-emulator = { path = "BitVMX-CPU/emulator" }
-bitvmx-cpu-definitions = { path = "BitVMX-CPU/definitions" }
-bitcoin-script-riscv = { path = "BitVMX-CPU/bitcoin-script-riscv" }
+#[patch."https://github.com/FairgateLabs/BitVMX-CPU.git"]
+#emulator = { path = "BitVMX-CPU/emulator" }
+#bitvmx-cpu-definitions = { path = "BitVMX-CPU/definitions" }
+#bitcoin-script-riscv = { path = "BitVMX-CPU/bitcoin-script-riscv" }
+
+paths = [
+    "rust-bitvmx-settings",
+
+    "rust-bitvmx-storage-backend",
+
+    "rust-bitvmx-key-manager",
+    "rust-bitvmx-bitcoin-rpc",
+
+    "rust-bitcoind",
+
+    "rust-bitcoin-indexer",
+
+    "rust-bitvmx-transaction-monitor",
+
+    "rust-bitcoin-coordinator",
+
+    "rust-bitvmx-protocol-builder",
+
+    "rust-bitvmx-broker",
+
+    "rust-bitvmx-job-dispatcher/dispatcher",
+    "rust-bitvmx-job-dispatcher/jobtypes",
+
+    "rust-bitvmx-operator-comms",
+
+    "rust-bitvmx-wallet",
+
+    "BitVMX-CPU/emulator",
+    "BitVMX-CPU/definitions",
+    "BitVMX-CPU/bitcoin-script-riscv",
+]

@@ -74,3 +74,21 @@ paths = [
     "BitVMX-CPU/definitions",
     "BitVMX-CPU/bitcoin-script-riscv",
 ]
+
+[alias]
+# Builds in debug mode: (add --release for release mode)
+# * Library (lib.rs)
+# * Binary (main.rs)
+# * All tests (unit + integration + doc tests)
+# * All examples
+# * All benchmarks (release mode)
+buildall = "test --no-run --all-targets --benches"
+
+# Shorthand for buildall
+ba = "buildall"
+
+# Shorthand for buildall --release
+bar = "buildall --release"
+
+# Run tests with single thread
+tt = "test -- --test-threads=1"

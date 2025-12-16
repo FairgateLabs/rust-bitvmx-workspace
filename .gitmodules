@@ -1,15 +1,15 @@
 [submodule "rust-bitvmx-client"]
 	path = rust-bitvmx-client
 	url = ../rust-bitvmx-client
-	branch = main
+	branch = VMX-MON-007
 [submodule "rust-bitvmx-key-manager"]
 	path = rust-bitvmx-key-manager
 	url = ../rust-bitvmx-key-manager
-	branch = main
+	branch = VMX-MON-007
 [submodule "rust-bitvmx-protocol-builder"]
 	path = rust-bitvmx-protocol-builder
 	url = ../rust-bitvmx-protocol-builder
-	branch = main
+	branch = VMX-MON-007
 [submodule "rust-bitcoin-coordinator"]
 	path = rust-bitcoin-coordinator
 	url = ../rust-bitcoin-coordinator
@@ -17,7 +17,7 @@
 [submodule "rust-bitvmx-storage-backend"]
 	path = rust-bitvmx-storage-backend
 	url = ../rust-bitvmx-storage-backend
-	branch = main
+	branch = VMX-MON-007
 [submodule "rust-bitvmx-job-dispatcher"]
 	path = rust-bitvmx-job-dispatcher
 	url = ../rust-bitvmx-job-dispatcher

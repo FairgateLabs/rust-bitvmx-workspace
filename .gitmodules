@@ -33,7 +33,7 @@
 [submodule "rust-bitvmx-bitcoin-rpc"]
 	path = rust-bitvmx-bitcoin-rpc
 	url = ../rust-bitvmx-bitcoin-rpc
-	branch = main
+	branch = VMX-MON-007
 [submodule "rust-bitvmx-settings"]
 	path = rust-bitvmx-settings
 	url = ../rust-bitvmx-settings
@@ -49,6 +49,7 @@
 [submodule "rust-bitcoind"]
 	path = rust-bitcoind
 	url = ../rust-bitcoind
+	branch = VMX-MON-007
 [submodule "bitvmx-test-coordination-system"]
 	path = bitvmx-test-coordination-system
 	url = ../bitvmx-test-coordination-system
@@ -64,4 +65,4 @@
 [submodule "rust-bitvmx-wallet"]
 	path = rust-bitvmx-wallet
 	url = ../rust-bitvmx-wallet
-        branch = main
+  branch = VMX-MON-007

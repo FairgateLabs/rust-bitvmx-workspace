@@ -95,3 +95,6 @@ tt = "test -- --test-threads=1"
 
 # Run tests in release mode with single thread
 ttr = "test --release -- --test-threads=1"
+
+# Use the meta tool
+meta = "run --release --manifest-path=meta/Cargo.toml"

@@ -49,8 +49,11 @@ impl CrateEditor {
                                 item.insert("version", Value::from(new_version.to_string()));
                             }
 
-                            // Check for tag and update if present
-                            if let Some(tag_item) = item.get_mut("tag") {
+                            // Check for branch and replace with tag
+                            if item.contains_key("branch") {
+                                item.remove("branch");
+                                item.insert("tag", Value::from(format!("v{}", new_version)));
+                            } else if let Some(tag_item) = item.get_mut("tag") {
                                 if let Some(tag_str) = tag_item.as_str() {
                                     let has_v = tag_str.starts_with('v');
                                     let new_tag = if has_v {
@@ -182,6 +185,35 @@ git-dep-no-v = { git = "https://example.com/repo2", tag = "0.1.0" }
         let content = fs::read_to_string(manifest_path)?;
         assert!(content.contains(r#"tag = "v0.2.0""#));
         assert!(content.contains(r#"tag = "0.2.0""#));
+
+        Ok(())
+    }
+    #[test]
+    fn test_update_git_branch_to_tag() -> Result<()> {
+        let temp_dir = tempfile::tempdir()?;
+        let manifest_path = temp_dir.path().join("Cargo.toml");
+        fs::write(
+            &manifest_path,
+            r#"[package]
+name = "my-crate"
+version = "0.1.0"
+
+[dependencies]
+git-dep = { git = "https://example.com/repo", branch = "master" }
+"#,
+        )?;
+
+        let mut editor = CrateEditor::new(temp_dir.path())?;
+        let new_version = Version::parse("0.2.0")?;
+
+        let members = vec!["git-dep".to_string()];
+
+        editor.update_dependencies(&members, &new_version)?;
+        editor.save()?;
+
+        let content = fs::read_to_string(manifest_path)?;
+        assert!(!content.contains("branch"));
+        assert!(content.contains(r#"tag = "v0.2.0""#));
 
         Ok(())
     }

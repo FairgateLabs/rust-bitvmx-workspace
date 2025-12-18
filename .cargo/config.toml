@@ -92,3 +92,6 @@ bar = "buildall --release"
 
 # Run tests with single thread
 tt = "test -- --test-threads=1"
+
+# Run tests in release mode with single thread
+ttr = "test --release -- --test-threads=1"

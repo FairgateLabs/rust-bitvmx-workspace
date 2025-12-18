@@ -206,7 +206,8 @@ mod tests {
             r#"[workspace]
 members = [
     "crate_a",
-    "crate_b"
+    "crate_b",
+    "crate_c"
 ]
 "#,
         )?;
@@ -234,6 +235,17 @@ edition = "2021"
 [dependencies]
 crate_a = { git = "https://github.com/foo/crate_a", tag = "v0.1.0" }
 start-up = "1.0"
+special-package = { path = "../crate_c", version = "0.1.0" }
+"#,
+        )?;
+
+        fs::create_dir(workspace_root.join("crate_c"))?;
+        fs::write(
+            workspace_root.join("crate_c/Cargo.toml"),
+            r#"[package]
+name = "special-package"
+version = "0.1.0"
+edition = "2021"
 "#,
         )?;
 
@@ -288,6 +300,11 @@ start-up = "1.0"
             crate_b_toml.contains(
                 r#"crate_a = { git = "https://github.com/foo/crate_a", tag = "v0.2.0" }"#
             )
+        );
+        // Verify mismatch package name update
+        assert!(
+            crate_b_toml
+                .contains(r#"special-package = { path = "../crate_c", version = "0.2.0" }"#)
         );
 
         Ok(())
@@ -349,7 +366,8 @@ version = "0.1.0"
             r#"[workspace]
 members = [
     "crate_a",
-    "crate_b"
+    "crate_b",
+    "crate_c"
 ]
 "#,
         )?;
@@ -375,8 +393,19 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-crate_a = {  git = "https://github.com/foo/crate_a", tag = "v0.1.0" }
+crate_a = { git = "https://github.com/foo/crate_a", tag = "v0.1.0" }
 start-up = "1.0"
+special-package = { path = "../crate_c", version = "0.1.0" }
+"#,
+        )?;
+
+        fs::create_dir(root.join("crate_c"))?;
+        fs::write(
+            root.join("crate_c/Cargo.toml"),
+            r#"[package]
+name = "special-package"
+version = "0.1.0"
+edition = "2021"
 "#,
         )?;
 

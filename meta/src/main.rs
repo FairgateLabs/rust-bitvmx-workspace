@@ -1,5 +1,6 @@
 mod config;
 mod editor;
+mod git;
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
@@ -9,7 +10,7 @@ use glob::glob;
 use semver::Version;
 use std::collections::HashSet;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use toml_edit::DocumentMut;
 
 #[derive(Parser)]
@@ -29,6 +30,32 @@ enum Commands {
     },
     /// Initialize a new Meta.toml by scanning the current directory
     Init,
+    /// Create (if needed) and switch to a branch in all repositories
+    Branch { name: String },
+    /// Checkout a branch in all repositories
+    Checkout { name: String },
+    /// Merge a branch into the current branch in all repositories
+    Merge { branch: String },
+    /// Commit changes with a version bump message in all repositories
+    Commit,
+    /// Push changes to remote in all repositories
+    Push,
+    /// Push the version tag to origin (vX.Y.Z)
+    PushTag,
+    /// Create a version tag in all repositories
+    Tag,
+    /// Remove a branch in all repositories
+    RemoveBranch {
+        name: String,
+        #[arg(long)]
+        remote: bool,
+    },
+    /// Remove a tag in all repositories
+    RemoveTag {
+        name: String,
+        #[arg(long)]
+        remote: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -37,7 +64,44 @@ fn main() -> Result<()> {
     match &cli.command {
         Commands::Bump { version } => bump_all(version),
         Commands::Init => generate_meta(),
+        Commands::Branch { name } => run_git_on_all(|repo| git::create_branch(repo, &name)),
+        Commands::Checkout { name } => run_git_on_all(|repo| git::checkout_branch(repo, &name)),
+        Commands::Merge { branch } => run_git_on_all(|repo| git::merge_branch(repo, &branch)),
+        Commands::Commit => run_git_on_all(|repo| git::commit(repo)),
+        Commands::Push => run_git_on_all(|repo| git::push(repo)),
+        Commands::PushTag => run_git_on_all(|repo| git::push_tag(repo)),
+        Commands::Tag => run_git_on_all(|repo| git::create_tag(repo)),
+        Commands::RemoveBranch { name, remote } => {
+            run_git_on_all(|repo| git::remove_branch(repo, &name, *remote))
+        }
+        Commands::RemoveTag { name, remote } => {
+            run_git_on_all(|repo| git::remove_tag(repo, &name, *remote))
+        }
     }
+}
+
+fn run_git_on_all<F>(op: F) -> Result<()>
+where
+    F: Fn(&Path) -> Result<()>,
+{
+    let config = MetaConfig::load()?;
+    let member_paths: Vec<PathBuf> = config
+        .workspace
+        .members
+        .iter()
+        .map(|m| PathBuf::from(m))
+        .collect();
+
+    let repos = git::get_unique_repos(&member_paths)?;
+
+    println!("Found {} unique repositories.", repos.len());
+
+    for repo in repos {
+        if let Err(e) = op(&repo) {
+            eprintln!("Error in repo {:?}: {}", repo, e);
+        }
+    }
+    Ok(())
 }
 
 fn generate_meta() -> Result<()> {
@@ -410,6 +474,92 @@ edition = "2021"
         )?;
 
         println!("Created tests_workspace at {}", root.display());
+        Ok(())
+    }
+
+    #[test]
+    fn test_git_integration() -> Result<()> {
+        // 1. Setup temp workspace with git repo
+        let temp_dir = tempdir()?;
+        let root = temp_dir.path();
+
+        // Init git repo
+        let status = std::process::Command::new("git")
+            .current_dir(root)
+            .args(&["init"])
+            .status()?;
+        assert!(status.success());
+
+        // Configure minimal git user for commit to work
+        std::process::Command::new("git")
+            .current_dir(root)
+            .args(&["config", "user.email", "you@example.com"])
+            .status()?;
+        std::process::Command::new("git")
+            .current_dir(root)
+            .args(&["config", "user.name", "Your Name"])
+            .status()?;
+
+        // Create Cargo.toml to define version
+        fs::write(
+            root.join("Cargo.toml"),
+            r#"[package]
+name = "test-pkg"
+version = "1.2.3"
+"#,
+        )?;
+
+        // Create initial commit
+        fs::write(root.join("README.md"), "init")?;
+        std::process::Command::new("git")
+            .current_dir(root)
+            .args(&["add", "."])
+            .status()?;
+        std::process::Command::new("git")
+            .current_dir(root)
+            .args(&["commit", "-m", "Initial"])
+            .status()?;
+
+        // Verify git::create_branch works on this repo directly
+        crate::git::create_branch(root, "feature-x")?;
+
+        let output = std::process::Command::new("git")
+            .current_dir(root)
+            .args(&["branch"])
+            .output()?;
+        let stdout = String::from_utf8(output.stdout)?;
+        assert!(stdout.contains("feature-x"));
+
+        // Test Tag
+        crate::git::create_tag(root)?;
+        let output = std::process::Command::new("git")
+            .current_dir(root)
+            .args(&["tag"])
+            .output()?;
+        let stdout = String::from_utf8(output.stdout)?;
+        assert!(stdout.contains("v1.2.3"));
+
+        // Setup mock remote for PushTag test
+        let remote_dir = temp_dir.path().join("remote.git");
+        std::process::Command::new("git")
+            .args(&["init", "--bare", remote_dir.to_str().unwrap()])
+            .status()?;
+        std::process::Command::new("git")
+            .current_dir(root)
+            .args(&["remote", "add", "origin", remote_dir.to_str().unwrap()])
+            .status()?;
+
+        // Test PushTag
+        crate::git::push_tag(root)?;
+
+        // Verify tag exists in remote
+        let output = std::process::Command::new("git")
+            .current_dir(&remote_dir)
+            .args(&["tag"])
+            .output()?;
+        let stdout = String::from_utf8(output.stdout)?;
+        assert!(stdout.contains("v1.2.3"));
+
         Ok(())
     }
 }

@@ -1,7 +1,5 @@
 /target
 .DS_Store
 /meta/target
-/meta/test_workspace
-
-
+/meta/tests_workspace
 /meta/Cargo.lock

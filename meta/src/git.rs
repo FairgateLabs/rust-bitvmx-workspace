@@ -92,33 +92,37 @@ pub fn push(repo_path: &Path) -> Result<()> {
     run_git_cmd(repo_path, &["push", "-u", "origin", &branch])
 }
 
-pub fn commit(repo_path: &Path) -> Result<()> {
+pub fn commit(repo_path: &Path, message: Option<&str>) -> Result<()> {
     println!("Committing in {:?}", repo_path);
 
-    // Scan for a VERSION to use in the message
-    // We'll look for Cargo.toml in the repo root first, or search subdirs?
-    // User requirement: "complete the version from the version of the package"
-    // Since a repo can contain multiple packages, this is ambiguous.
-    // I will look for a Cargo.toml in the repo root. If not found, I might scan subdirs to find *one*.
-    // Or iterate the members that belong to this repo.
-    // For simplicity, let's try reading Cargo.toml at repo root.
-
-    let cargo_toml = repo_path.join("Cargo.toml");
-    let version_str = if cargo_toml.exists() {
-        if let Ok(editor) = CrateEditor::new(repo_path) {
-            editor
-                .get_version()
-                .map(|v| v.to_string())
-                .unwrap_or_else(|| "unknown".to_string())
-        } else {
-            "unknown".to_string()
-        }
+    let msg = if let Some(m) = message {
+        m.to_string()
     } else {
-        // Fallback: This might be a workspace root or valid repo without package at root.
-        "unknown".to_string()
+        // Scan for a VERSION to use in the message
+        // We'll look for Cargo.toml in the repo root first, or search subdirs?
+        // User requirement: "complete the version from the version of the package"
+        // Since a repo can contain multiple packages, this is ambiguous.
+        // I will look for a Cargo.toml in the repo root. If not found, I might scan subdirs to find *one*.
+        // Or iterate the members that belong to this repo.
+        // For simplicity, let's try reading Cargo.toml at repo root.
+
+        let cargo_toml = repo_path.join("Cargo.toml");
+        let version_str = if cargo_toml.exists() {
+            if let Ok(editor) = CrateEditor::new(repo_path) {
+                editor
+                    .get_version()
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| "unknown".to_string())
+            } else {
+                "unknown".to_string()
+            }
+        } else {
+            // Fallback: This might be a workspace root or valid repo without package at root.
+            "unknown".to_string()
+        };
+        format!("bump version {}", version_str)
     };
 
-    let msg = format!("bump version {}", version_str);
     run_git_cmd(repo_path, &["commit", "-am", &msg])
 }
 

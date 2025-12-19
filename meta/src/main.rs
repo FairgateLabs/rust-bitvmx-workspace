@@ -37,7 +37,11 @@ enum Commands {
     /// Merge a branch into the current branch in all repositories
     Merge { branch: String },
     /// Commit changes with a version bump message in all repositories
-    Commit,
+    Commit {
+        /// Custom commit message. If not provided, defaults to "bump version <version>"
+        #[arg(short, long)]
+        message: Option<String>,
+    },
     /// Push changes to remote in all repositories
     Push,
     /// Push the version tag to origin (vX.Y.Z)
@@ -67,7 +71,9 @@ fn main() -> Result<()> {
         Commands::Branch { name } => run_git_on_all(|repo| git::create_branch(repo, &name)),
         Commands::Checkout { name } => run_git_on_all(|repo| git::checkout_branch(repo, &name)),
         Commands::Merge { branch } => run_git_on_all(|repo| git::merge_branch(repo, &branch)),
-        Commands::Commit => run_git_on_all(|repo| git::commit(repo)),
+        Commands::Commit { message } => {
+            run_git_on_all(|repo| git::commit(repo, message.as_deref()))
+        }
         Commands::Push => run_git_on_all(|repo| git::push(repo)),
         Commands::PushTag => run_git_on_all(|repo| git::push_tag(repo)),
         Commands::Tag => run_git_on_all(|repo| git::create_tag(repo)),

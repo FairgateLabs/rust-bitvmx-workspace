@@ -97,4 +97,4 @@ tt = "test -- --test-threads=1"
 ttr = "test --release -- --test-threads=1"
 
 # Use the meta tool
-meta = "run --release --manifest-path=meta/Cargo.toml"
+meta = "run --release --manifest-path=rust-meta/Cargo.toml"

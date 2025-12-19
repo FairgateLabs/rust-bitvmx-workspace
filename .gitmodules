@@ -65,3 +65,7 @@
 	path = rust-bitvmx-wallet
 	url = ../rust-bitvmx-wallet
         branch = main
+[submodule "rust-meta"]
+	path = rust-meta
+	url = ../rust-meta
+        branch = main

@@ -32,9 +32,6 @@
 #bitvmx-job-dispatcher = { path = "rust-bitvmx-job-dispatcher/dispatcher" }
 #bitvmx-job-dispatcher-types = { path = "rust-bitvmx-job-dispatcher/jobtypes" }
 
-#[patch."https://github.com/FairgateLabs/rust-bitvmx-operator-comms.git"]
-#bitvmx-operator-comms = { path = "rust-bitvmx-operator-comms" }
-
 #[patch."https://github.com/FairgateLabs/rust-bitvmx-wallet.git"]
 #bitvmx-wallet = { path = "rust-bitvmx-wallet" }
 
@@ -65,8 +62,6 @@ paths = [
 
     "rust-bitvmx-job-dispatcher/dispatcher",
     "rust-bitvmx-job-dispatcher/jobtypes",
-
-    "rust-bitvmx-operator-comms",
 
     "rust-bitvmx-wallet",
 

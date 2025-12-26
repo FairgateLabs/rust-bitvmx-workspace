@@ -14,7 +14,6 @@ members = [
     "rust-bitvmx-job-dispatcher/jobtypes",
     "rust-bitvmx-job-dispatcher/risczero-dispatcher",
     "rust-bitvmx-key-manager",
-    "rust-bitvmx-operator-comms/broker",
     "rust-bitvmx-protocol-builder",
     "rust-bitvmx-settings",
     "rust-bitvmx-storage-backend",

@@ -62,6 +62,7 @@ paths = [
 
     "rust-bitvmx-job-dispatcher/dispatcher",
     "rust-bitvmx-job-dispatcher/jobtypes",
+    "rust-bitvmx-job-dispatcher/dispatcher-utils",
 
     "rust-bitvmx-wallet",
 

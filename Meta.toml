@@ -14,6 +14,8 @@ members = [
     "rust-bitvmx-job-dispatcher/jobtypes",
     "rust-bitvmx-job-dispatcher/risczero-dispatcher",
     "rust-bitvmx-job-dispatcher/dispatcher-utils",
+    "rust-bitvmx-job-dispatcher/aws-helper",
+    "rust-bitvmx-job-dispatcher/test-helper",
     "rust-bitvmx-key-manager",
     "rust-bitvmx-protocol-builder",
     "rust-bitvmx-settings",

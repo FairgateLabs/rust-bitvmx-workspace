@@ -23,4 +23,5 @@ members = [
     "rust-bitvmx-transaction-monitor",
     "rust-bitvmx-wallet",
     "rust-bitvmx-zk-proof/zk-result",
+    "rust-bitvmx-gc",
 ]

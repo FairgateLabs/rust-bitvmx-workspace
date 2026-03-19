@@ -65,3 +65,6 @@
 	path = rust-meta
 	url = ../rust-meta
         branch = main
+[submodule "rust-bitvmx-gc"]
+	path = rust-bitvmx-gc
+	url = ../rust-bitvmx-gc

@@ -69,6 +69,8 @@ paths = [
     "BitVMX-CPU/emulator",
     "BitVMX-CPU/definitions",
     "BitVMX-CPU/bitcoin-script-riscv",
+
+    "rust-bitvmx-gc",
 ]
 
 [alias]

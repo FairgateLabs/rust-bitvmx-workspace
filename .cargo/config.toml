@@ -63,6 +63,11 @@ paths = [
     "rust-bitvmx-job-dispatcher/dispatcher",
     "rust-bitvmx-job-dispatcher/jobtypes",
     "rust-bitvmx-job-dispatcher/dispatcher-utils",
+    "rust-bitvmx-job-dispatcher/emulator-dispatcher",
+    "rust-bitvmx-job-dispatcher/garbled-dispatcher",
+    "rust-bitvmx-job-dispatcher/risczero-dispatcher",
+    "rust-bitvmx-job-dispatcher/test-helper",
+    "rust-bitvmx-job-dispatcher/aws-helper",
 
     "rust-bitvmx-wallet",
 

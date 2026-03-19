@@ -11,6 +11,7 @@ members = [
     "rust-bitvmx-client",
     "rust-bitvmx-job-dispatcher/dispatcher",
     "rust-bitvmx-job-dispatcher/emulator-dispatcher",
+    "rust-bitvmx-job-dispatcher/garbled-dispatcher",
     "rust-bitvmx-job-dispatcher/jobtypes",
     "rust-bitvmx-job-dispatcher/risczero-dispatcher",
     "rust-bitvmx-job-dispatcher/dispatcher-utils",

@@ -3,6 +3,7 @@ name: Nightly Build
 on:
   schedule:
     - cron: '0 0 * * 3'
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -21,8 +22,8 @@ jobs:
             cargo_features: 'regtest'
             clippy: true
             build_cpu: true
-            dockerfile_path: tests/Dockerfile
-            docker_compose_path: tests/docker-compose.yml
+            dockerfile_path: tests/docker/Dockerfile
+            docker_compose_path: tests/docker/docker-compose.yml
 
     uses: FairgateLabs/rust-bitvmx-workspace/.github/workflows/test_template.yml@main
     with:

@@ -122,7 +122,10 @@ jobs:
           echo "Checking out repository: $REPO_NAME on branch: $BRANCH"
           git clone --recurse-submodules --depth=1 --branch $BRANCH --shallow-submodules https://github.com/${{ inputs.repo }} rust-bitvmx-workspace
       
+      # In nightly mode we test the submodule versions the workspace pins, so we
+      # do NOT override the recursively-cloned (pinned) submodule with a branch.
       - name: Checkout current repository
+        if: ${{ !inputs.nightly }}
         run: |
           echo "Checking out branch: $BRANCH"
           git clone --depth=1 --branch $BRANCH https://github.com/FairgateLabs/${{ inputs.submodule_path }} ${{ inputs.submodule_path }}
@@ -132,22 +135,22 @@ jobs:
           if [[ "$NIGHTLY" == "true" ]]; then
             echo "Rearranging submodules for build"
             cd "$ROOT/rust-bitvmx-workspace"
-            
+
             # Copy .cargo/config.toml to preserve patches
             if [[ -f ".cargo/config.toml" ]]; then
               echo "Copying .cargo/config.toml to preserve patches"
               mkdir -p "$ROOT/.cargo"
               cp ".cargo/config.toml" "$ROOT/.cargo/"
             fi
-            
+
+            # Move every submodule (including the pinned ${{ inputs.submodule_path }})
+            # so the build uses exactly the versions the workspace pins.
             for dir in */; do
               name="${dir%/}"
-              if [[ "$name" != "${{ inputs.submodule_path }}" ]]; then
-                echo "Moving $name to $ROOT"
-                mv "$name" "$ROOT/"
-              fi
+              echo "Moving $name to $ROOT"
+              mv "$name" "$ROOT/"
             done
-            echo "Moved all other submodules to top-level"
+            echo "Moved all submodules (including pinned ${{ inputs.submodule_path }}) to top-level"
             rm -rf "$ROOT/rust-bitvmx-workspace"
           else
             echo "Running in submodule-triggered mode"

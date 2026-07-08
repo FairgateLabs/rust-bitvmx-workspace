@@ -3,7 +3,7 @@ members = [
     "BitVMX-CPU/bitcoin-script-riscv",
     "BitVMX-CPU/definitions",
     "BitVMX-CPU/emulator",
-    "rust-bitcoin-coordinator",
+    "rust-bitvmx-bitcoin",
     "rust-bitcoin-indexer",
     "rust-bitcoind",
     "rust-bitvmx-bitcoin-rpc",

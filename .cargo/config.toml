@@ -63,7 +63,7 @@ paths = [
 
     "rust-bitvmx-transaction-monitor",
 
-    "rust-bitcoin-coordinator",
+    "rust-bitvmx-bitcoin",
 
     "rust-bitvmx-protocol-builder",
 

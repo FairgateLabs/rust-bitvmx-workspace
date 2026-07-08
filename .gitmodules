@@ -10,9 +10,9 @@
 	path = rust-bitvmx-protocol-builder
 	url = ../rust-bitvmx-protocol-builder
 	branch = main
-[submodule "rust-bitcoin-coordinator"]
-	path = rust-bitcoin-coordinator
-	url = ../rust-bitcoin-coordinator
+[submodule "rust-bitvmx-bitcoin"]
+	path = rust-bitvmx-bitcoin
+	url = ../rust-bitvmx-bitcoin
 	branch = main
 [submodule "rust-bitvmx-storage-backend"]
 	path = rust-bitvmx-storage-backend

@@ -19,8 +19,8 @@
 #[patch."https://github.com/FairgateLabs/rust-bitvmx-transaction-monitor.git"]
 #bitvmx-transaction-monitor = { path = "rust-bitvmx-transaction-monitor" }
 #
-#[patch."https://github.com/FairgateLabs/rust-bitcoin-coordinator"]
-#bitcoin-coordinator = { path = "rust-bitcoin-coordinator" }
+#[patch."https://github.com/FairgateLabs/rust-bitvmx-bitcoin"]
+#bitcoin-coordinator = { path = "rust-bitvmx-bitcoin" }
 #
 #[patch."https://github.com/FairgateLabs/rust-bitvmx-protocol-builder.git"]
 #bitvmx-protocol-builder = { path = "rust-bitvmx-protocol-builder" }
@@ -47,7 +47,7 @@
 #bitcoin-script-riscv = { path = "BitVMX-CPU/bitcoin-script-riscv" }
 #
 #[patch."https://github.com/FairgateLabs/rust-bitvmx-gc.git"]
-#bitvmx-gc = { path = "rust-bitvmx-gc" }
+#garbled_nova = { path = "rust-bitvmx-gc" }
 
 paths = [
     "rust-bitvmx-settings",

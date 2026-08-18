@@ -70,4 +70,5 @@
 	url = ../rust-bitvmx-gc
 [submodule "rust-bitvmx-client-types"]
 	path = rust-bitvmx-client-types
-	url = https://github.com/FairgateLabs/rust-bitvmx-client-types.git
+	url = ../rust-bitvmx-client-types
+	branch = main

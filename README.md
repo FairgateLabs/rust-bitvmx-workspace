@@ -23,6 +23,9 @@ git submodule init
 git submodule update --remote --checkout
 ```
 
+## Before tagging the workspace
+Before releasing a new tag in this repository, you have to manually update the branch used from the client-types repo, it's release is done automatically after the client does a release.
+
 ## Architecture Diagram
 
 ![Architecture Diagram Image]

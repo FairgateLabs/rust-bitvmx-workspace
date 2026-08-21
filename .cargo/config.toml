@@ -94,7 +94,7 @@ paths = [
 # * All tests (unit + integration + doc tests)
 # * All examples
 # * All benchmarks (release mode)
-buildall = "test --no-run --all-targets --benches"
+buildall = "test --locked --no-run --all-targets --benches"
 
 # Shorthand for buildall
 ba = "buildall"
@@ -103,10 +103,10 @@ ba = "buildall"
 bar = "buildall --release"
 
 # Run tests with single thread
-tt = "test -- --test-threads=1"
+tt = "test --locked -- --test-threads=1"
 
 # Run tests in release mode with single thread
-ttr = "test --release -- --test-threads=1"
+ttr = "test --locked --release -- --test-threads=1"
 
 # Use the meta tool
-meta = "run --release --manifest-path=rust-meta/Cargo.toml"
+meta = "run --locked --release --manifest-path=rust-meta/Cargo.toml"

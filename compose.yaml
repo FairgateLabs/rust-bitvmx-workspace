@@ -1,0 +1,12 @@
+services:
+  cargo-cooldown:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    stdin_open: true
+    tty: true
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    command: bash

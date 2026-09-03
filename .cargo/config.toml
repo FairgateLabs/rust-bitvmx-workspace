@@ -110,3 +110,9 @@ ttr = "test --locked --release -- --test-threads=1"
 
 # Use the meta tool
 meta = "run --locked --release --manifest-path=rust-meta/Cargo.toml"
+
+# clippy with same args as CI
+cy = "clippy --all-features -- -D warnings"
+
+# start a bitcoin node (on the client repo)
+node = "test --release -- --ignored test_prepare_bitcoin"

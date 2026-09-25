@@ -33,18 +33,27 @@ Inspect the workspace and every managed repository:
 git status --short
 git branch --show-current
 git remote -v
+test "$(git branch --show-current)" = main
+test "$(git rev-parse HEAD)" = "$(git ls-remote origin refs/heads/main | awk '{print $1}')"
 cargo meta exec 'git status --short'
 cargo meta exec 'git branch --show-current'
 cargo meta exec 'git remote -v'
+cargo meta exec 'test "$(git branch --show-current)" = dev'
+cargo meta exec 'test "$(git rev-parse HEAD)" = "$(git ls-remote origin refs/heads/dev | awk "{print \$1}")"'
+docker --version
+docker compose config
 ```
 
 Confirm that:
 
 - the workspace and all managed repositories contain no unrelated changes;
-- all repositories are on the expected starting branch;
+- the top-level workspace is on `main`, while every managed repository is on `dev`, before the release branch is created;
+- the workspace's local `main` exactly matches `origin/main`, and every managed repository's local `dev` exactly matches `origin/dev`;
 - every repository has an `origin` remote;
 - Docker is available and `docker compose config` succeeds; and
 - `VERSION`, the release branch, and `v$VERSION` are correct.
+
+Do not create or switch to the release branch unless the workspace `main`/`origin/main` check and every managed repository `dev`/`origin/dev` check pass.
 
 Report the findings. Do not continue from a dirty or inconsistent state without explicit user instructions.
 

@@ -1,0 +1,56 @@
+name: Build and publish client image from workspace
+
+'on':
+  push:
+    tags:
+      - 'build-client-v[0-9]+.[0-9]+.[0-9]+.*'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out tagged workspace and submodules
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN || github.token }}
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Determine image version
+        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^build-client-v[0-9]+\.[0-9]+\.[0-9]+\.[A-Za-z0-9_][A-Za-z0-9_.-]*$ ]]; then
+            echo "::error::Invalid client build tag: $TAG" >&2
+            exit 1
+          fi
+          echo "version=${TAG#build-client-}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.PUSH_DOCKER_TOKEN }}
+
+      - name: Build and publish client image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: rust-bitvmx-client/docker/Dockerfile.bitvmx.from_workspace
+          platforms: linux/amd64,linux/arm64
+          tags: ghcr.io/fairgatelabs/rust-bitvmx-workspace/bitvmx-client:${{ steps.version.outputs.version }}
+          labels: org.opencontainers.image.source=https://github.com/FairgateLabs/rust-bitvmx-workspace
+          no-cache: true
+          push: true

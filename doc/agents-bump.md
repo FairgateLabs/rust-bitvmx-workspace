@@ -1,6 +1,6 @@
 # Agent procedure: bump all projects to a new version
 
-Use this procedure to release one version across every repository in `Meta.toml`, update lockfiles through the cooldown container, merge the release into `dev`, and update the workspace's submodule pointers.
+Use this procedure to release one version across every repository in `Meta.toml`, update lockfiles on the host with Cargo's native publish-age policy, merge the release into `dev`, and update the workspace's submodule pointers.
 
 ## Mandatory interaction and safety rules
 
@@ -12,7 +12,7 @@ Use this procedure to release one version across every repository in `Meta.toml`
 6. Treat output containing `Error`, `failed`, or a non-zero per-repository status as a failure even if `cargo meta` itself exits successfully. Some `cargo meta` operations print per-repository errors but still return exit code 0.
 7. Never include unrelated changes in a commit. Report unrelated local changes, but they may be ignored without additional approval when they do not overlap with the targeted files or affect the requested commands. Never stage or commit them. Stop and ask for instructions if they overlap with the target or could affect the operation.
 8. The only force operations permitted by this procedure are replacing the local release tag after the lockfile commits and force-pushing that replacement tag. Warn the user immediately before each force operation and obtain explicit confirmation.
-9. Run all `cargo meta` commands from the workspace root. Run `cargo cooldown update` only inside the Docker container.
+9. Run all `cargo meta` commands from the workspace root. Run lockfile updates on the host with Cargo 1.100 or newer so each repository's native publish-age configuration is enforced.
 10. Keep a list of every managed repository and verify each operation against that list. Do not assume success from the final exit code alone.
 11. Treat `rust-meta` as workspace tooling, not as a managed repository. Exclude it from cross-repository operations unless the user explicitly requests otherwise.
 
@@ -40,8 +40,8 @@ cargo meta exec 'git branch --show-current'
 cargo meta exec 'git remote -v'
 cargo meta exec 'test "$(git branch --show-current)" = dev'
 cargo meta exec 'test "$(git rev-parse HEAD)" = "$(git ls-remote origin refs/heads/dev | awk "{print \$1}")"'
-docker --version
-docker compose config
+rustc --version
+cargo --version
 ```
 
 Confirm that:
@@ -50,7 +50,7 @@ Confirm that:
 - the top-level workspace is on `main`, while every managed repository is on `dev`, before the release branch is created;
 - the workspace's local `main` exactly matches `origin/main`, and every managed repository's local `dev` exactly matches `origin/dev`;
 - every repository has an `origin` remote;
-- Docker is available and `docker compose config` succeeds; and
+- the host uses Cargo 1.100 or newer, which natively enforces the repositories' publish-age configuration; and
 - `VERSION`, the release branch, and `v$VERSION` are correct.
 
 Do not create or switch to the release branch unless the workspace `main`/`origin/main` check and every managed repository `dev`/`origin/dev` check pass.
@@ -138,25 +138,18 @@ cargo meta exec 'test "$(git rev-parse HEAD)" = "$(git ls-remote origin "refs/ta
 
 Report the result and ask before starting dependency updates.
 
-## Phase 6: update lockfiles inside the cooldown container
+## Phase 6: update lockfiles on the host
 
-After confirmation, enter the disposable cooldown container from the workspace root:
-
-```bash
-./cool.sh
-```
-
-Inside the container, run the cooldown update once per unique managed repository through `cargo meta`:
+After confirmation, run the lockfile update once per unique managed repository from the workspace root:
 
 ```bash
-cargo meta exec 'cargo cooldown update'
+cargo meta exec 'cargo update'
 cargo meta exec 'git status --short -- Cargo.lock'
-exit
 ```
 
-Do not run plain `cargo update`, and do not run dependency updates on the host. Carefully inspect the complete output from every repository. A printed per-repository error is a failure even if the aggregate command exits with status 0.
+Use Cargo 1.100 or newer so `cargo update` natively applies each repository's publish-age configuration. No Docker container is required. Carefully inspect the complete output from every repository. A printed per-repository error is a failure even if the aggregate command exits with status 0.
 
-Back on the host, inspect only the lockfile changes:
+Inspect only the lockfile changes:
 
 ```bash
 cargo meta exec 'git status --short'
@@ -165,7 +158,7 @@ cargo meta exec 'git diff -- Cargo.lock'
 
 Confirm that only expected `Cargo.lock` files changed. Report which repositories changed and summarize dependency changes. If no lockfile changed, report that and ask whether the user wants to continue without a lockfile commit.
 
-## Phase 7: commit updated lockfiles outside Docker
+## Phase 7: commit updated lockfiles
 
 After confirmation, stage only lockfiles in all managed repositories:
 
@@ -197,7 +190,7 @@ Stop if any tracked change remains or any lockfile commit fails.
 
 ## Phase 8: replace and republish the release tag
 
-The existing tags point to the manifest-only commits. They must now point to the commits containing the cooldown-generated lockfiles.
+The existing tags point to the manifest-only commits. They must now point to the commits containing the updated lockfiles.
 
 Warn the user that the following command force-moves local `v$VERSION` tags. After explicit confirmation, run:
 

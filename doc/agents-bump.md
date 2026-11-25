@@ -1,6 +1,6 @@
 # Agent procedure: bump all projects to a new version
 
-Use this procedure to release one version across every repository in `Meta.toml`, update lockfiles on the host with Cargo's native publish-age policy, merge the release into `dev`, and update the workspace's submodule pointers.
+Use this procedure to release one version across every repository in `Meta.toml`, update the intentionally retained lockfiles in `rust-bitvmx-client` and `rust-bitvmx-zk-proof` on the host with Cargo's native dependency cooldown, create and publish the release tag once, merge the release into `dev`, and update the workspace's submodule pointers. The client retains its lockfile because it is the CLI application; the ZK repository retains its lockfile for RISC Zero reproducibility.
 
 ## Mandatory interaction and safety rules
 
@@ -11,8 +11,8 @@ Use this procedure to release one version across every repository in `Meta.toml`
 5. Stop immediately if any command fails, any repository reports an error, a merge conflict occurs, or verification differs between repositories. Explain the error and wait for instructions; never reset, discard, amend, force-push, or work around it without approval.
 6. Treat output containing `Error`, `failed`, or a non-zero per-repository status as a failure even if `cargo meta` itself exits successfully. Some `cargo meta` operations print per-repository errors but still return exit code 0.
 7. Never include unrelated changes in a commit. Report unrelated local changes, but they may be ignored without additional approval when they do not overlap with the targeted files or affect the requested commands. Never stage or commit them. Stop and ask for instructions if they overlap with the target or could affect the operation.
-8. The only force operations permitted by this procedure are replacing the local release tag after the lockfile commits and force-pushing that replacement tag. Warn the user immediately before each force operation and obtain explicit confirmation.
-9. Run all `cargo meta` commands from the workspace root. Run lockfile updates on the host with Cargo 1.100 or newer so each repository's native publish-age configuration is enforced.
+8. Never move or force-push a release tag. Create and publish the tag only after all manifest and lockfile commits are complete.
+9. Run all `cargo meta` commands from the workspace root. Run lockfile updates on the host with the Rust 1.100 toolchain or newer so Cargo's native dependency cooldown is enforced.
 10. Keep a list of every managed repository and verify each operation against that list. Do not assume success from the final exit code alone.
 11. Treat `rust-meta` as workspace tooling, not as a managed repository. Exclude it from cross-repository operations unless the user explicitly requests otherwise.
 
@@ -40,6 +40,7 @@ cargo meta exec 'git branch --show-current'
 cargo meta exec 'git remote -v'
 cargo meta exec 'test "$(git branch --show-current)" = dev'
 cargo meta exec 'test "$(git rev-parse HEAD)" = "$(git ls-remote origin refs/heads/dev | awk "{print \$1}")"'
+cargo meta exec 'case "$(basename "$PWD")" in rust-bitvmx-client|rust-bitvmx-zk-proof) test -f Cargo.lock ;; *) test ! -f Cargo.lock ;; esac'
 rustc --version
 cargo --version
 ```
@@ -50,7 +51,8 @@ Confirm that:
 - the top-level workspace is on `main`, while every managed repository is on `dev`, before the release branch is created;
 - the workspace's local `main` exactly matches `origin/main`, and every managed repository's local `dev` exactly matches `origin/dev`;
 - every repository has an `origin` remote;
-- the host uses Cargo 1.100 or newer, which natively enforces the repositories' publish-age configuration; and
+- `Cargo.lock` exists only in `rust-bitvmx-client` (the CLI application) and `rust-bitvmx-zk-proof` (for RISC Zero reproducibility), and is absent from every other managed repository;
+- the host uses the Rust 1.100 toolchain or newer, whose Cargo natively enforces the repositories' dependency cooldown configuration; and
 - `VERSION`, the release branch, and `v$VERSION` are correct.
 
 Do not create or switch to the release branch unless the workspace `main`/`origin/main` check and every managed repository `dev`/`origin/dev` check pass.
@@ -108,9 +110,59 @@ cargo meta exec 'git log -1 --oneline'
 
 `cargo meta commit` is for the manifest-related changes; lockfile changes are committed separately later. Report all resulting commit IDs and ask before continuing.
 
-## Phase 5: create and publish the initial release tag and branch
+## Phase 5: update the retained lockfiles on the host
 
-After confirmation, create `v$VERSION` in every repository:
+After confirmation, update only the two intentionally retained lockfiles, once per unique managed repository from the workspace root:
+
+```bash
+cargo meta exec 'case "$(basename "$PWD")" in rust-bitvmx-client|rust-bitvmx-zk-proof) cargo update ;; *) printf "SKIP %s: lockfile not retained\n" "$PWD" ;; esac'
+cargo meta exec 'git status --short -- Cargo.lock'
+```
+
+Use the Rust 1.100 toolchain or newer so `cargo update` natively applies each repository's dependency cooldown configuration. Do not create `Cargo.lock` files in any other repository. Carefully inspect the complete output from every repository. A printed per-repository error is a failure even if the aggregate command exits with status 0.
+
+Inspect only the lockfile changes:
+
+```bash
+cargo meta exec 'git status --short'
+cargo meta exec 'git diff -- Cargo.lock'
+```
+
+Confirm that only `rust-bitvmx-client/Cargo.lock` and `rust-bitvmx-zk-proof/Cargo.lock` may have changed. Report the result for both repositories and summarize dependency changes. If neither lockfile changed, report that and ask whether the user wants to continue without a lockfile commit.
+
+## Phase 6: commit updated lockfiles
+
+After confirmation, stage lockfiles only in `rust-bitvmx-client` and `rust-bitvmx-zk-proof`:
+
+```bash
+cargo meta exec 'case "$(basename "$PWD")" in rust-bitvmx-client|rust-bitvmx-zk-proof) git add -- Cargo.lock ;; *) printf "SKIP %s: lockfile not retained\n" "$PWD" ;; esac'
+```
+
+Verify the staged content before committing:
+
+```bash
+cargo meta exec 'git diff --cached --name-only'
+cargo meta exec 'git diff --cached -- Cargo.lock'
+```
+
+Only `Cargo.lock` may be staged. After reporting this verification and receiving confirmation, commit the staged lockfiles:
+
+```bash
+cargo meta exec 'git diff --cached --quiet || git commit -m "chore: update Cargo.lock for v$VERSION"'
+```
+
+The conditional avoids failing when either retained lockfile did not change. Verify and report all resulting commit IDs and clean states:
+
+```bash
+cargo meta exec 'git status --short'
+cargo meta exec 'git log -1 --oneline'
+```
+
+Stop if any tracked change remains or any lockfile commit fails.
+
+## Phase 7: create and publish the release tag and branch
+
+Create the release tag only after the manifest and any existing lockfile updates are committed. After confirmation, create `v$VERSION` in every repository:
 
 ```bash
 cargo meta tag "$VERSION"
@@ -136,91 +188,9 @@ cargo meta exec 'git fetch origin --quiet && test "$(git rev-parse HEAD)" = "$(g
 cargo meta exec 'test "$(git rev-parse HEAD)" = "$(git ls-remote origin "refs/tags/v$VERSION" | awk "{print \$1}")"'
 ```
 
-Report the result and ask before starting dependency updates.
-
-## Phase 6: update lockfiles on the host
-
-After confirmation, run the lockfile update once per unique managed repository from the workspace root:
-
-```bash
-cargo meta exec 'cargo update'
-cargo meta exec 'git status --short -- Cargo.lock'
-```
-
-Use Cargo 1.100 or newer so `cargo update` natively applies each repository's publish-age configuration. No Docker container is required. Carefully inspect the complete output from every repository. A printed per-repository error is a failure even if the aggregate command exits with status 0.
-
-Inspect only the lockfile changes:
-
-```bash
-cargo meta exec 'git status --short'
-cargo meta exec 'git diff -- Cargo.lock'
-```
-
-Confirm that only expected `Cargo.lock` files changed. Report which repositories changed and summarize dependency changes. If no lockfile changed, report that and ask whether the user wants to continue without a lockfile commit.
-
-## Phase 7: commit updated lockfiles
-
-After confirmation, stage only lockfiles in all managed repositories:
-
-```bash
-cargo meta exec 'git add Cargo.lock'
-```
-
-Verify the staged content before committing:
-
-```bash
-cargo meta exec 'git diff --cached --name-only'
-cargo meta exec 'git diff --cached -- Cargo.lock'
-```
-
-Only `Cargo.lock` may be staged. After reporting this verification and receiving confirmation, commit the staged lockfiles:
-
-```bash
-cargo meta exec 'git diff --cached --quiet || git commit -m "chore: update Cargo.lock for v$VERSION"'
-```
-
-The conditional avoids failing in repositories whose lockfile did not change. Verify and report all resulting commit IDs and clean states:
-
-```bash
-cargo meta exec 'git status --short'
-cargo meta exec 'git log -1 --oneline'
-```
-
-Stop if any tracked change remains or any lockfile commit fails.
-
-## Phase 8: replace and republish the release tag
-
-The existing tags point to the manifest-only commits. They must now point to the commits containing the updated lockfiles.
-
-Warn the user that the following command force-moves local `v$VERSION` tags. After explicit confirmation, run:
-
-```bash
-cargo meta tag --force "$VERSION"
-```
-
-Verify every local tag points to `HEAD`:
-
-```bash
-cargo meta exec 'test "$(git rev-parse HEAD)" = "$(git rev-list -n 1 "v$VERSION")"'
-```
-
-Report the result. Then warn that the next operation force-updates remote tags and request a separate explicit confirmation. Push the release branch commits and replacement tags:
-
-```bash
-cargo meta push
-cargo meta push-tag --force "$VERSION"
-```
-
-Verify remote branch and tag state in every repository:
-
-```bash
-cargo meta exec 'git fetch origin --quiet && test "$(git rev-parse HEAD)" = "$(git rev-parse "origin/$VERSION")"'
-cargo meta exec 'test "$(git rev-parse HEAD)" = "$(git ls-remote origin "refs/tags/v$VERSION" | awk "{print \$1}")"'
-```
-
 Report the result and ask before merging into `dev`.
 
-## Phase 9: merge the release branch into `dev`
+## Phase 8: merge the release branch into `dev`
 
 After confirmation, check out `dev` everywhere:
 
@@ -263,7 +233,7 @@ cargo meta exec 'git fetch origin --quiet && test "$(git rev-parse HEAD)" = "$(g
 
 Report the result and ask before updating the top-level workspace.
 
-## Phase 10: commit updated submodule pointers in the workspace
+## Phase 9: commit updated submodule pointers in the workspace
 
 This phase uses plain Git in the top-level workspace, not `cargo meta`.
 
@@ -310,8 +280,8 @@ Provide a concise release summary containing:
 
 - version, release branch, and tag;
 - manifest bump commits by repository;
-- lockfile commits by repository (including repositories with no lockfile change);
-- confirmation that the release branches and forced replacement tags were pushed;
+- lockfile commits for `rust-bitvmx-client` and `rust-bitvmx-zk-proof`, including either repository if its lockfile did not change;
+- confirmation that the release branches and final tags were pushed once;
 - confirmation that the release branch was merged and pushed to `dev` everywhere;
 - the top-level workspace commit and pushed branch; and
 - any warnings or deviations explicitly approved by the user.
